@@ -12,7 +12,7 @@
             "name": "ComingDemon"
         }
     ],
-    "license": "LGPL",
+    "license": "MIT",
     "require": {
 		"php": "^7.2"
 	},
