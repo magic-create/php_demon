@@ -2,7 +2,7 @@
 /**
  * 本文件用于定义一些加密相关的内容
  * Created by M-Create.Team,
- * Copyright REC
+ * Copyright 魔网天创信息科技
  * User: ComingDemon
  * Date: 2019/3/14
  * Time: 10:21
@@ -25,9 +25,9 @@ class Rsa
 
     /**
      * 初始化
-     * @author    ComingDemon
-     * @copyright 魔网天创信息科技
      * @return $this
+     * @copyright 魔网天创信息科技
+     * @author    ComingDemon
      * @internal  param array $options //参数
      *
      */
@@ -41,14 +41,15 @@ class Rsa
 
     /**
      * 设置私钥
-     * @author    ComingDemon
-     * @copyright 魔网天创信息科技
      *
      * @param        $string
      *
      * @param string $passphrase
      *
      * @return $this
+     * @copyright 魔网天创信息科技
+     *
+     * @author    ComingDemon
      */
     public function setPrivate($string, $passphrase = '')
     {
@@ -61,12 +62,13 @@ class Rsa
 
     /**
      * 设置私钥
-     * @author    ComingDemon
-     * @copyright 魔网天创信息科技
      *
      * @param $string
      *
      * @return $this
+     * @author    ComingDemon
+     * @copyright 魔网天创信息科技
+     *
      */
     public function setPublic($string)
     {
@@ -78,12 +80,13 @@ class Rsa
 
     /**
      * 私钥加密
-     * @author    ComingDemon
-     * @copyright 魔网天创信息科技
      *
      * @param $data
      *
      * @return mixed
+     * @author    ComingDemon
+     * @copyright 魔网天创信息科技
+     *
      */
     public function privateEncrypt($data)
     {
@@ -99,12 +102,13 @@ class Rsa
 
     /**
      * BASE64加码
-     * @author    ComingDemon
-     * @copyright 魔网天创信息科技
      *
      * @param $string
      *
      * @return mixed|string
+     * @author    ComingDemon
+     * @copyright 魔网天创信息科技
+     *
      */
     function base64Encode($string)
     {
@@ -116,12 +120,13 @@ class Rsa
 
     /**
      * BASE64解码
-     * @author    ComingDemon
-     * @copyright 魔网天创信息科技
      *
      * @param $string
      *
      * @return bool|string
+     * @author    ComingDemon
+     * @copyright 魔网天创信息科技
+     *
      */
     function base64Decode($string)
     {
@@ -136,12 +141,13 @@ class Rsa
 
     /**
      * 公钥解密
-     * @author    ComingDemon
-     * @copyright 魔网天创信息科技
      *
      * @param $encrypted
      *
      * @return string
+     * @author    ComingDemon
+     * @copyright 魔网天创信息科技
+     *
      */
     public function publicDecrypt($encrypted)
     {
@@ -156,12 +162,13 @@ class Rsa
 
     /**
      * 公钥加密
-     * @author    ComingDemon
-     * @copyright 魔网天创信息科技
      *
      * @param $data
      *
      * @return mixed
+     * @author    ComingDemon
+     * @copyright 魔网天创信息科技
+     *
      */
     public function publicEncrypt($data)
     {
@@ -177,12 +184,13 @@ class Rsa
 
     /**
      * 私钥解密
-     * @author    ComingDemon
-     * @copyright 魔网天创信息科技
      *
      * @param $encrypted
      *
      * @return string
+     * @author    ComingDemon
+     * @copyright 魔网天创信息科技
+     *
      */
     public function privateDecrypt($encrypted)
     {

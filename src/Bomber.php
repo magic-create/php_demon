@@ -2,7 +2,7 @@
 /**
  * 本文件用于定义一些通用相关的内容
  * Created by M-Create.Team,
- * Copyright REC
+ * Copyright 魔网天创信息科技
  * User: ComingDemon
  * Date: 2019/3/14
  * Time: 10:21
@@ -10,6 +10,7 @@
 
 namespace Demon\Library;
 
+use stdClass;
 
 class Bomber
 {
@@ -20,10 +21,10 @@ class Bomber
 
     /**
      * 初始化
-     * @author    ComingDemon
+     * @return Bomber
      * @copyright 魔网天创信息科技
      *
-     * @return Bomber
+     * @author    ComingDemon
      */
     static public function instance()
     {
@@ -35,12 +36,13 @@ class Bomber
 
     /**
      * 获取项目根目录
-     * @author    ComingDemon
-     * @copyright 魔网天创信息科技
      *
      * @param string $path
      *
      * @return string
+     * @author    ComingDemon
+     * @copyright 魔网天创信息科技
+     *
      */
     public function root($path = '')
     {
@@ -55,13 +57,13 @@ class Bomber
 
     /**
      * 对象合并
-     * @author    ComingDemon
+     * @return mixed
      * @copyright 魔网天创信息科技
      *
      *
-     * @return mixed
+     * @author    ComingDemon
      */
-    public function object_merge()
+    public function objectMerge()
     {
         //  获取参数
         $parm = func_get_args();
@@ -74,34 +76,37 @@ class Bomber
 
     /**
      * 对象克隆
-     * @author    ComingDemon
-     * @copyright 魔网天创信息科技
      *
      * @param $object
      *
      * @return mixed
+     * @author    ComingDemon
+     * @copyright 魔网天创信息科技
+     *
      */
-    public function object_clone($object)
+    public function objectClone($object)
     {
-        return self::array_to_object(self::object_to_array($object));
+        return self::arrayToObject(self::objectToArray($object));
     }
 
     /**
      * 对象排序
-     * @author    ComingDemon
-     * @copyright 魔网天创信息科技
      *
      * @param $object
      * @param $type
+     *
+     * @author    ComingDemon
+     * @copyright 魔网天创信息科技
+     *
      */
-    public function object_sort(&$object, $type)
+    public function objectSort(&$object, $type)
     {
         if ($object) {
-            $object = self::object_to_array($object);
+            $object = self::objectToArray($object);
             $type($object);
-            $object = (object)self::array_to_object($object);
+            $object = (object)self::arrayToObject($object);
             //  新对象
-            $newObject = new \stdClass();
+            $newObject = new stdClass();
             //  保证对象是文本键名
             foreach ($object as $key => $val)
                 $newObject->{(string)$key} = $val;
@@ -111,16 +116,17 @@ class Bomber
 
     /**
      * 对象过滤器
-     * @author    ComingDemon
-     * @copyright 魔网天创信息科技
      *
      * @param array $object //  对象或数组
      * @param array $filter //  过滤器数组
      * @param int   $mod    //  小于0表示黑名单模式，大于0表示白名单模式
      *
      * @return array
+     * @author    ComingDemon
+     * @copyright 魔网天创信息科技
+     *
      */
-    public function object_filter(&$object = [], $filter = [], $mod = -1)
+    public function objectFilter(&$object = [], $filter = [], $mod = -1)
     {
         //  是数组还是对象呢？
         $dataType = '';
@@ -162,69 +168,73 @@ class Bomber
 
     /**
      * 统计对象成员数量
-     * @author    ComingDemon
-     * @copyright 魔网天创信息科技
      *
      * @param $object
      *
      * @return int
+     * @author    ComingDemon
+     * @copyright 魔网天创信息科技
+     *
      */
-    public function object_count($object)
+    public function objectCount($object)
     {
-        return count(self::object_to_array($object));
+        return count(self::objectToArray($object));
     }
 
     /**
      * 将对象转换为数组
-     * @author    ComingDemon
-     * @copyright 魔网天创信息科技
      *
      * @param $object //对象
      *
      * @return mixed
+     * @author    ComingDemon
+     * @copyright 魔网天创信息科技
+     *
      */
-    public function object_to_array($object)
+    public function objectToArray($object)
     {
         return json_decode(json_encode($object), true);;
     }
 
     /**
      * 将数组转换为对象
-     * @author    ComingDemon
-     * @copyright 魔网天创信息科技
      *
      * @param $array //数组
      *
      * @return mixed
+     * @author    ComingDemon
+     * @copyright 魔网天创信息科技
+     *
      */
-    public function array_to_object($array)
+    public function arrayToObject($array)
     {
         return json_decode(json_encode($array));;
     }
 
     /**
      * XML转换为对象
-     * @author    ComingDemon
-     * @copyright 魔网天创信息科技
      *
      * @param $xml
      *
      * @return mixed
+     * @author    ComingDemon
+     * @copyright 魔网天创信息科技
+     *
      */
-    public function xml_to_object($xml)
+    public function xmlToObject($xml)
     {
         //禁止引用外部xml实体
         libxml_disable_entity_loader(true);
         //  返回结果
         $object = json_decode(json_encode(simplexml_load_string($xml, 'SimpleXMLElement', LIBXML_NOCDATA)));
         //  进入递归（将子节点的item标签设置为主节点内容）
-        self::_xml_to_object($object);
+        self::_xmlToObject($object);
 
         //  返回结果
         return $object;
     }
 
-    private function _xml_to_object(&$data)
+    private function _xmlToObject(&$data)
     {
         //  如果是对象或者数组，则递归进去
         if (is_object($data) || is_array($data)) {
@@ -240,15 +250,13 @@ class Bomber
                     }
                 }
                 //  继续递归
-                self::_xml_to_object($val);
+                self::_xmlToObject($val);
             }
         }
     }
 
     /**
      * 对象转换为XML
-     * @author    ComingDemon
-     * @copyright 魔网天创信息科技
      *
      * @param        $object
      * @param null   $doccment
@@ -257,14 +265,17 @@ class Bomber
      * @param bool   $isFormat
      *
      * @return string
+     * @author    ComingDemon
+     * @copyright 魔网天创信息科技
+     *
      */
-    public function object_to_xml($object, $doccment = null, $item = null, $root = 'xml', $isFormat = true)
+    public function objectToXml($object, $doccment = null, $item = null, $root = 'xml', $isFormat = true)
     {
         //  首次申明对象
         if (!$doccment) {
             $doccment = new \DOMDocument('1.0');
             $doccment->encoding = 'UTF-8';
-            $object = self::object_to_array($object);
+            $object = self::objectToArray($object);
         }
         //  首次申明结构体
         if (!$item) {
@@ -280,7 +291,7 @@ class Bomber
                 $itemx->appendChild($text);
             }
             else
-                self::object_to_xml($val, $doccment, $itemx);
+                self::objectToXml($val, $doccment, $itemx);
         }
 
         //  生成结果
@@ -295,30 +306,32 @@ class Bomber
 
     /**
      * 计算数字长度
-     * @author    ComingDemon
-     * @copyright 魔网天创信息科技
      *
      * @param $num
      *
      * @return int
+     * @author    ComingDemon
+     * @copyright 魔网天创信息科技
+     *
      */
-    public function num_count($num)
+    public function numCount($num)
     {
         return strlen((int)($num));
     }
 
     /**
      * 检查字符串是否出现在数组中
-     * @author    ComingDemon
-     * @copyright 魔网天创信息科技
      *
      * @param            $string
      * @param            $arrry
      * @param bool|false $returnvalue
      *
      * @return bool
+     * @author    ComingDemon
+     * @copyright 魔网天创信息科技
+     *
      */
-    public function array_strpos($string, $arrry, $returnvalue = false)
+    public function arrayStrpos($string, $arrry, $returnvalue = false)
     {
         if (empty($string))
             return false;
@@ -336,32 +349,33 @@ class Bomber
 
     /**
      *   修改数字下标为内容中的键值
-     * @author      ComingDemon
-     * @copyright   魔网天创信息科技
      *
      * @param        $array
      * @param string $index
      *
      * @return array
+     * @copyright   魔网天创信息科技
+     *
+     * @author      ComingDemon
      */
-    public function array_index($array, $index = '')
+    public function arrayIndex($array, $index = '')
     {
         $isObj = false;
         if ($index) {
             if (is_object($array)) {
                 $isObj = true;
-                $array = self::object_to_array($array);
+                $array = self::objectToArray($array);
             }
             $array = array_values($array);
             $newArray = [];
             foreach ($array as $val) {
                 if (is_object($array[0]))
-                    $newArray[$val->$index] = self::array_to_object($val);
+                    $newArray[$val->$index] = self::arrayToObject($val);
                 else
                     $newArray[$val[$index]] = $val;
             }
 
-            return $isObj ? self::array_to_object($newArray) : $newArray;
+            return $isObj ? self::arrayToObject($newArray) : $newArray;
         }
 
         return $array;
@@ -369,52 +383,54 @@ class Bomber
 
     /**
      * 获取数组维度
-     * @author    ComingDemon
-     * @copyright 魔网天创信息科技
      *
      * @param $array
      *
      * @return mixed
+     * @author    ComingDemon
+     * @copyright 魔网天创信息科技
+     *
      */
-    public function array_level($array)
+    public function arrayLevel($array)
     {
         $arraylevel = [0];
-        self::_array_level($array, $arraylevel, 0);
+        self::_arrayLevel($array, $arraylevel, 0);
 
         return max($arraylevel);
     }
 
-    private function _array_level($array, &$arraylevel, $level = 0)
+    private function _arrayLevel($array, &$arraylevel, $level = 0)
     {
         if (is_array($array)) {
             $level++;
             $arraylevel[] = $level;
             foreach ($array as $val)
-                self::_array_level($val, $arraylevel, $level);
+                self::_arrayLevel($val, $arraylevel, $level);
         }
     }
 
     /**
      * 随机取出一个值
-     * @author    ComingDemon
-     * @copyright 魔网天创信息科技
      *
      * @param array $array
      *
      * @return mixed|null
+     * @author    ComingDemon
+     * @copyright 魔网天创信息科技
+     *
      */
-    public function array_rand($array = [])
+    public function arrayRand($array = [])
     {
         return !$array ? null : $array[rand(0, count($array) - 1)];
     }
 
     /**
      * 数组排序
-     * @author    ComingDemon
-     * @copyright 魔网天创信息科技
      * @return bool|mixed|null
+     * @copyright 魔网天创信息科技
+     * @author    ComingDemon
      */
-    public function array_reorder()
+    public function arrayReorder()
     {
         //  array_reorder($array,$field1,$order1,$field2,$order2,...)
         $args = func_get_args();
@@ -446,16 +462,17 @@ class Bomber
 
     /**
      * 删除数组指定元素
-     * @author    ComingDemon
-     * @copyright 魔网天创信息科技
      *
      * @param array $array  //原数组
      * @param array $array2 //需要去掉的值
      * @param bool  $reset  //是否重排
      *
      * @return array
+     * @author    ComingDemon
+     * @copyright 魔网天创信息科技
+     *
      */
-    public function array_unset(&$array = [], $array2 = [], $reset = true)
+    public function arrayUnset(&$array = [], $array2 = [], $reset = true)
     {
         //  强转第二个参数为数组
         if (!is_array($array2))
@@ -479,13 +496,14 @@ class Bomber
 
     /**
      * 创建一个随机字符串
-     * @author    ComingDemon
-     * @copyright 魔网天创信息科技
      *
      * @param int    $length //随机长度
      * @param string $type   //随机类型
      *
      * @return string
+     * @copyright 魔网天创信息科技
+     *
+     * @author    ComingDemon
      */
     public function rand($length = 6, $type = 'all')
     {
@@ -517,12 +535,13 @@ class Bomber
 
     /**
      * 通过密码生成一个加密密码
-     * @author    ComingDemon
-     * @copyright 魔网天创信息科技
      *
      * @param $parm //  参数
      *
      * @return mixed
+     * @author    ComingDemon
+     * @copyright 魔网天创信息科技
+     *
      */
     public function password($parm = [])
     {
@@ -556,21 +575,22 @@ class Bomber
 
     /**
      * 转换为指定精度
-     * @author    ComingDemon
-     * @copyright 魔网天创信息科技
      *
      * @param        $value //数值
      * @param int    $long  //精度位数
      * @param string $type  //截取类型
      *
      * @return string
+     * @author    ComingDemon
+     * @copyright 魔网天创信息科技
+     *
      */
-    public function double($value, $long = 2, $type = 'floor')
+    public function doublePrecision($value, $long = 2, $type = 'floor')
     {
         //  精度
         $pow = pow(10, $long);
         //  转换为字符串（解决科学计数法展示）
-        $value = $type != 'science' ? self::double($value, $long, 'science') : $value;
+        $value = $type != 'science' ? self::doublePrecision($value, $long, 'science') : $value;
         switch ($type) {
             case 'science':
                 if (stripos($value, 'e') !== false) {
@@ -581,13 +601,13 @@ class Bomber
             case 'floor':
                 return number_format(floor(bcmul($pow, $value)) / $pow, $long, '.', '');
             case 'round':
-                return self::double(round($value, $long), $long);
+                return self::doublePrecision(round($value, $long), $long);
             case 'ceil':
                 return number_format(ceil(bcmul($pow, $value, $long)) / $pow, $long, '.', '');
             case 'integer':
-                return self::double(floor($value), $long);
+                return self::doublePrecision(floor($value), $long);
             case 'decimals':
-                return $long < 0 ? (string)($value - floor($value)) : self::double($value - floor($value), $long);
+                return $long < 0 ? (string)($value - floor($value)) : self::doublePrecision($value - floor($value), $long);
             case 'repair':
                 return round($value * $pow) / $pow;
         }
@@ -598,15 +618,16 @@ class Bomber
 
     /**
      * 修复精度问题
-     * @author    ComingDemon
-     * @copyright 魔网天创信息科技
      *
      * @param     $value
      * @param int $long
      *
      * @return float|int
+     * @copyright 魔网天创信息科技
+     *
+     * @author    ComingDemon
      */
-    public function repair_double($value, $long = 2)
+    public function doubleRepair($value, $long = 2)
     {
         //  计算比例
         $ratio = pow(10, $long);
@@ -617,8 +638,6 @@ class Bomber
 
     /**
      * 数字节点转字符串
-     * @author    ComingDemon
-     * @copyright 魔网天创信息科技
      *
      * @param            $number //原数字
      * @param int        $digit  //节点位数
@@ -626,8 +645,11 @@ class Bomber
      * @param bool|false $force  //是否强制(不判断符合位数)
      *
      * @return string
+     * @copyright 魔网天创信息科技
+     *
+     * @author    ComingDemon
      */
-    public function num_to_char($number, $digit = 4, $string = 'k', $force = false)
+    public function numToChar($number, $digit = 4, $string = 'k', $force = false)
     {
         //  判断数字是否达到转换标准
         $minNumber = pow(10, $digit);
@@ -641,30 +663,32 @@ class Bomber
 
     /**
      * 数字最大值返回
-     * @author    ComingDemon
-     * @copyright 魔网天创信息科技
      *
      * @param        $number
      * @param        $max
      * @param string $string
      *
      * @return string
+     * @author    ComingDemon
+     * @copyright 魔网天创信息科技
+     *
      */
-    public function num_to_max($number, $max, $string = '')
+    public function numToMax($number, $max, $string = '')
     {
         return min($number, $max) == $max ? ($string ? : $max . '+') : $number;
     }
 
     /**
      * 取摘要信息
-     * @author    ComingDemon
-     * @copyright 魔网天创信息科技
      *
      * @param $string
      * @param $length
      * @param $charset
      *
      * @return mixed|string
+     * @author    ComingDemon
+     * @copyright 魔网天创信息科技
+     *
      */
     public function digest($string, $length, $charset = 'utf-8')
     {
@@ -673,8 +697,6 @@ class Bomber
 
     /**
      * 生成一个订单码
-     * @author    ComingDemon
-     * @copyright 魔网天创信息科技
      *
      * @param int    $type    //订单码类型
      * @param int    $length  //订单码长度
@@ -683,8 +705,11 @@ class Bomber
      * @param string $preType //前缀位置（center:中间,left:左侧）
      *
      * @return int|string
+     * @author    ComingDemon
+     * @copyright 魔网天创信息科技
+     *
      */
-    public function get_order($type = 0, $length = 20, $isTime = true, $pre = '', $preType = 'center')
+    public function orderBuild($type = 0, $length = 20, $isTime = true, $pre = '', $preType = 'center')
     {
         //  前缀是时间
         if ($isTime) {
@@ -708,34 +733,36 @@ class Bomber
 
     /**
      * 字符串过长截取
-     * @author    ComingDemon
-     * @copyright 魔网天创信息科技
      *
      * @param $str
      * @param $length
      * @param $suffix
      *
      * @return string
+     * @author    ComingDemon
+     * @copyright 魔网天创信息科技
+     *
      */
-    public function cut_str($str, $length, $suffix = '...')
+    public function strCut($str, $length, $suffix = '...')
     {
         return mb_strimwidth($str, 0, $length, $suffix, 'utf-8');
     }
 
     /**
-     * 名称隐藏截取
-     * @author    ComingDemon
-     * @copyright 魔网天创信息科技
+     * 字符串加掩码
      *
      * @param       $name
      * @param array $parm
      *
      * @return string
+     * @copyright 魔网天创信息科技
+     *
+     * @author    ComingDemon
      */
-    public function cut_name($name, $parm = [])
+    public function strMask($name, $parm = [])
     {
         //  字符集
-        $encoding = 'utf-8';
+        $encoding = $parm['encoding'] ?? 'utf-8';
         //  前缀长度
         $firstLength = isset($parm['first']) ? $parm['first'] : 1;
         //  后缀长度
@@ -747,9 +774,8 @@ class Bomber
         $lastStr = mb_substr($name, -($lastLength), $lastLength, $encoding);
         //  如果总长度不足，则把尾部都变成*
         if ($strlen <= $firstLength + $lastLength)
-            $string = self::fill($firstLength + $lastLength, $firstStr, 'right', '*');
-        else
-            $string = self::fill($strlen - mb_strlen($lastStr, $encoding), $firstStr, 'right', '*') . $lastStr;
+            $string = self::strFill($firstLength + $lastLength, $firstStr, 'right', '*');
+        else $string = self::strFill($strlen - mb_strlen($lastStr, $encoding), $firstStr, 'right', '*') . $lastStr;
 
         //  返回结果
         return $string;
@@ -757,8 +783,6 @@ class Bomber
 
     /**
      * 不足0，位数补齐
-     * @author    ComingDemon
-     * @copyright 魔网天创信息科技
      *
      * @param $pre
      * @param $str
@@ -766,39 +790,46 @@ class Bomber
      * @param $zero
      *
      * @return string
+     * @copyright 魔网天创信息科技
+     *
+     * @author    ComingDemon
      */
-    public function fill($pre, $str, $type = 'left', $zero = '0')
+    public function strFill($pre, $str, $type = 'left', $zero = '0')
     {
         return str_pad($str, $pre, $zero, $type == 'left' ? STR_PAD_LEFT : STR_PAD_RIGHT);
     }
 
     /**
      * 返回当前运行毫秒（非请求毫秒）
-     * @author    ComingDemon
-     * @copyright 魔网天创信息科技
      * @return float
+     * @copyright 魔网天创信息科技
+     * @author    ComingDemon
      */
     public function mstime()
     {
-        list($s1, $s2) = explode(' ', microtime());
+        [$s1, $s2] = explode(' ', microtime());
 
         return (int)sprintf('%.0f', (floatval($s1) + floatval($s2)) * 1000);
     }
 
     /**
      * 毫秒时间戳转换日期格式
-     * @author    ComingDemon
-     * @copyright 魔网天创信息科技
      *
      * @param     $format
      * @param int $mstime
      *
      * @return false|mixed|string
+     * @copyright 魔网天创信息科技
+     *
+     * @author    ComingDemon
      */
     public function msdate($format, $mstime = DEMON_MSTIME)
     {
-        //  除以一千取出秒部分和毫秒部分
-        $info = explode('.', (int)$mstime / 1000);
+        //  如果是字符串表示是函数
+        if (is_string($mstime))
+            $mstime =
+                //  除以一千取出秒部分和毫秒部分
+            $info = explode('.', (int)$mstime / 1000);
         //  将所有反斜杠的f变成其他字符串临时保存
         if (strpos($format, '\f') !== false) {
             $format = str_replace('\\f', '(.ω.)', $format);
@@ -809,9 +840,9 @@ class Bomber
         $info[1] = isset($info[1]) ? $info[1] : 0;
         //  如果包含小写f，则替换f为毫秒部分（自动补齐为3位数）
         if (strpos($date, 'f') !== false)
-            $date = str_replace('f', self::fill(3, $info[1], 'right'), $date);
+            $date = str_replace('f', self::strFill(3, $info[1], 'right'), $date);
         //  将临时字符串还原为f
-        if ($cute??false)
+        if ($cute ?? false)
             $date = str_replace('(.ω.)', 'f', $date);
 
         //  返回秒部分格式化结果
@@ -820,17 +851,18 @@ class Bomber
 
     /**
      * 通过毫秒格式获取时间戳
-     * @author    ComingDemon
-     * @copyright 魔网天创信息科技
      *
      * @param     $msdate
      * @param int $time
      *
      * @return string
+     * @copyright 魔网天创信息科技
+     *
+     * @author    ComingDemon
      */
-    public function mstotime($msdate, $time = DEMON_TIME)
+    public function msdateToTime($msdate, $time = DEMON_TIME)
     {
-        list($usec, $sec) = explode('.', $msdate);
+        [$usec, $sec] = explode('.', $msdate);
         $date = strtotime($usec, $time);
 
         return str_pad($date . $sec, 13, '0', STR_PAD_RIGHT);
@@ -838,8 +870,6 @@ class Bomber
 
     /**
      * 根据规则获取一个时间戳
-     * @author    ComingDemon
-     * @copyright 魔网天创信息科技
      *
      * @param        $rule   //内置strtotime规则（）
      * @param mixed  $format //如果要获取特殊的规则
@@ -847,8 +877,11 @@ class Bomber
      * @param string $type   //mstime表示毫秒，默认为time秒
      *
      * @return false|int
+     * @copyright 魔网天创信息科技
+     *
+     * @author    ComingDemon
      */
-    public function control_time($rule, $format = 'Y-m-d H:i:s', $time = DEMON_MSTIME, $type = 'mstime')
+    public function timeBuild($rule, $format = 'Y-m-d H:i:s', $time = DEMON_MSTIME, $type = 'mstime')
     {
         $ratio = $type == 'mstime' ? 1000 : 1;
 
@@ -857,15 +890,16 @@ class Bomber
 
     /**
      * 合并加密2个字符串并且MD5加密
-     * @author    ComingDemon
-     * @copyright 魔网天创信息科技
      *
      * @param        $string //目标字符串
      * @param string $salt   //盐值
      *
      * @return string
+     * @copyright 魔网天创信息科技
+     *
+     * @author    ComingDemon
      */
-    function sme($string, $salt = '')
+    public function sme($string, $salt = '')
     {
         if (!$string)
             return '';
@@ -884,8 +918,6 @@ class Bomber
 
     /**
      * 字符串加密（异或加密，需要验证密钥和次数）
-     * @author    ComingDemon
-     * @copyright 魔网天创信息科技
      *
      * @param        $string //目标字符串
      * @param        $type   //类型（0：解密，1：加密）
@@ -893,8 +925,11 @@ class Bomber
      * @param int    $num    //加密次数
      *
      * @return mixed|string
+     * @copyright 魔网天创信息科技
+     *
+     * @author    ComingDemon
      */
-    function sse($string, $type = 1, $key = '', $num = 2)
+    public function sse($string, $type = 1, $key = '', $num = 2)
     {
         if (!$string)
             return '';
@@ -935,45 +970,69 @@ class Bomber
     }
 
     /**
-     * 验证数据标准性（是否为错误信息）
-     * @author    ComingDemon
+     * 数据错误生成（提供给验证数据标准性使用）
+     *
+     * @param int    $code
+     * @param string $message
+     *
+     * @return string
      * @copyright 魔网天创信息科技
+     * @author    ComingDemon
+     */
+    public function errorBuild($code = DEMON_CODE_FAIL, $message = ''):string
+    {
+        return "error|{$code}" . ($message ? "|{$message}" : '');
+    }
+
+    /**
+     * 验证数据标准性（是否为错误信息）
      *
      * @param      $info //返回信息
      * @param      $func //此处定义回调方法
      *
      * @return mixed
+     * @copyright 魔网天创信息科技
+     *
+     * @author    ComingDemon
      */
-    public function data_check($info, $func)
+    public function errorCheck($info, $func = null)
     {
-        if (gettype($info) == 'string') {
-            $foo = explode('|', $info);
-            if ($foo[0] == 'error') {
-                $foo[1] = $foo[1] ?? 412;
-                $foo[1] = is_numeric($foo[1]) ? (int)$foo[1] : substr($info, mb_strlen('error|'));
-                if ($func)
-                    return $func(self::array_to_object(['code' => is_numeric($foo[1]) ? $foo[1] : 412, 'message' => is_string($foo[1]) ? $foo[1] : '']));
-
-                return false;
+        //  特殊判断
+        $error = 'error|';
+        if (gettype($info) == 'string' && mb_strpos($info, $error) === 0) {
+            $data = mb_substr($info, mb_strlen($error));
+            //  判断剩下的文字是否是数字开头并且竖线分隔
+            $code = mb_substr($data, 0, mb_strpos($data, '|'));
+            if (is_numeric($code)) {
+                $code = (int)$code;
+                $message = mb_substr($data, mb_strpos($data, '|') + 1);
             }
-        }
-        else if (is_numeric($info) && $info > 0) {
-            if ($func)
-                return $func(self::array_to_object(['code' => is_numeric($foo[1]) ? $foo[1] : 412, 'message' => '']));
+            else {
+                if (is_numeric($data)) {
+                    $code = (int)$data;
+                    $message = '';
+                }
+                else {
+                    $code = DEMON_CODE_COND;
+                    $message = $data;
+                }
+            }
 
-            return false;
+            return $func ? $func(self::arrayToObject(['code' => $code, 'message' => $message])) : false;
         }
+        else if (is_numeric($info) && $info > 0)
+            return $func ? $func(self::arrayToObject(['code' => (int)$info])) : false;
 
         return $info;
     }
 
     /**
      * 当前是否SSL
-     * @author    ComingDemon
-     * @copyright 魔网天创信息科技
      * @return bool
+     * @copyright 魔网天创信息科技
+     * @author    ComingDemon
      */
-    public function is_ssl()
+    public function isSsl()
     {
         if (isset($_SERVER['HTTPS']) && ($_SERVER['HTTPS'] == '1' || strtolower($_SERVER['HTTPS']) == 'on'))
             return true;
@@ -989,11 +1048,11 @@ class Bomber
 
     /**
      * 检测是否使用手机访问
-     * @author    ComingDemon
-     * @copyright 魔网天创信息科技
      * @return bool
+     * @copyright 魔网天创信息科技
+     * @author    ComingDemon
      */
-    public function is_mobile()
+    public function isMobile()
     {
         if (isset($_SERVER['HTTP_VIA']) && stristr($_SERVER['HTTP_VIA'], 'wap'))
             return true;
@@ -1009,11 +1068,11 @@ class Bomber
 
     /**
      * 检查浏览器版本信息
-     * @author    ComingDemon
-     * @copyright 魔网天创信息科技
      * @return string
+     * @copyright 魔网天创信息科技
+     * @author    ComingDemon
      */
-    function browser()
+    public function browser()
     {
         //  获取浏览器信息
         if (empty($_SERVER['HTTP_USER_AGENT']))
@@ -1049,21 +1108,21 @@ class Bomber
         static $clientList = ['demon client'];
         static $demonList = ['demon app'];
 
-        if (self::array_strpos($mobileAgent, $weixinList))
+        if (self::arrayStrpos($mobileAgent, $weixinList))
             return 'wechat';
-        else if (self::array_strpos($mobileAgent, $clientList))
+        else if (self::arrayStrpos($mobileAgent, $clientList))
             return 'client';
-        else if (self::array_strpos($mobileAgent, $demonList))
+        else if (self::arrayStrpos($mobileAgent, $demonList))
             return 'app';
-        if (self::array_strpos($mobileAgent, $IPhoneList))
+        if (self::arrayStrpos($mobileAgent, $IPhoneList))
             return 'iphone';
-        else if (self::array_strpos($mobileAgent, $IPadList))
+        else if (self::arrayStrpos($mobileAgent, $IPadList))
             return 'ipad';
-        else if (self::array_strpos($mobileAgent, $WinPhoneList))
+        else if (self::arrayStrpos($mobileAgent, $WinPhoneList))
             return 'wphone';
-        else if (self::array_strpos($mobileAgent, $WmlList))
+        else if (self::arrayStrpos($mobileAgent, $WmlList))
             return 'wml';
-        else if (self::array_strpos($mobileAgent, $TouchList))
+        else if (self::arrayStrpos($mobileAgent, $TouchList))
             return 'touch';
         else {
             if (stripos($agent, 'MSIE') !== false || stripos($agent, 'rv:11.0'))
@@ -1085,15 +1144,16 @@ class Bomber
 
     /**
      * 获取客户端IP地址
-     * @author    ComingDemon
-     * @copyright 魔网天创信息科技
      *
      * @param bool $adv  //是否进行高级模式获取（有可能被伪装）
      * @param int  $type //返回类型 0 返回IP地址 1 返回IPV4地址数字
      *
      * @return mixed
+     * @copyright 魔网天创信息科技
+     *
+     * @author    ComingDemon
      */
-    function ip($adv = false, $type = 0)
+    public function ip($adv = false, $type = 0)
     {
         $type = $type ? 1 : 0;
         static $ip = null;
@@ -1124,16 +1184,17 @@ class Bomber
 
     /**
      * 通用正则验证
-     * @author    ComingDemon
-     * @copyright 魔网天创信息科技
      *
      * @param $content
      * @param $rule
      * @param $func
      *
      * @return bool
+     * @author    ComingDemon
+     * @copyright 魔网天创信息科技
+     *
      */
-    public function regexp($content, $rule, $func)
+    public function regexp($content, $rule, $func = null)
     {
         $rules = [
             //  布尔
@@ -1147,7 +1208,7 @@ class Bomber
             //  邮箱
             'email' => '/^[\w-]+(\.[\w-]+)*@[\w-]+(\.[\w-]+)+$/',
             //  手机
-            'mobile' => '/^(13[0-9]|14[5-9]|15[0-3,5-9]|16[2,5,6,7]|17[0-8]|18[0-9]|19[1,3,5,8,9])\\d{8}$/',
+            'mobile' => '/^[1](([3][0-9])|([4][5-9])|([5][0-3,5-9])|([6][5,6])|([7][0-8])|([8][0-9])|([9][1,8,9]))[0-9]{8}$/',
             //  链接
             'url' => '/^http(s)?:\\/\\/.+/',
             //  QQ
@@ -1182,67 +1243,71 @@ class Bomber
 
             return json_last_error() == JSON_ERROR_NONE;
         }
-        else if (in_array($rule, $rules))
-            return $result(!preg_match($rules[$rule], $content));
+        else if (isset($rules[$rule]))
+            return $result(preg_match($rules[$rule], $content));
         else
-            return $result(!preg_match($rule, $content));
+            return $result(preg_match($rule, $content));
     }
 
     /**
      * 当前的请求类型
-     * @author    ComingDemon
-     * @copyright 魔网天创信息科技
      *
      * @param bool $origin //获取原始请求类型
      *
      * @return  mixed
+     * @author    ComingDemon
+     * @copyright 魔网天创信息科技
+     *
      */
-    public function request_method($origin = false)
+    public function requestMethod($origin = false)
     {
         return !$origin && isset($_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE']) ? strtoupper($_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE']) : (PHP_SAPI == 'cli' ? 'GET' : ($_SERVER['REQUEST_METHOD'] ?? 'GET'));
     }
 
     /**
      * 获取当前包含协议的域名
-     * @author    ComingDemon
-     * @copyright 魔网天创信息科技
      *
      * @param bool $protocol //是否包含协议
      *
      * @return string
+     * @author    ComingDemon
+     * @copyright 魔网天创信息科技
+     *
      */
-    public function request_domain($protocol = false)
+    public function requestDomain($protocol = false)
     {
-        return $protocol ? (self::is_ssl() ? 'https' : 'http') . '://' . ($_SERVER['HTTP_HOST'] ?? '') : ($_SERVER['HTTP_HOST'] ?? '');
+        return $protocol ? (self::isSsl() ? 'https' : 'http') . '://' . ($_SERVER['HTTP_HOST'] ?? '') : ($_SERVER['HTTP_HOST'] ?? '');
     }
 
     /**
      * 获取当前URL 不含QUERY_STRING
-     * @author    ComingDemon
-     * @copyright 魔网天创信息科技
      *
      * @param int $type // 域名显示（1：域名，2：协议）
      *
      * @return string
+     * @author    ComingDemon
+     * @copyright 魔网天创信息科技
+     *
      */
-    public function request_base($type = 0)
+    public function requestBase($type = 0)
     {
-        $str = self::request_url();
+        $str = self::requestUrl();
         $base = strpos($str, '?') ? strstr($str, '?', true) : $str;
 
-        return $type ? self::request_domain($type == 2) . $base : $base;
+        return $type ? self::requestDomain($type == 2) . $base : $base;
     }
 
     /**
      * 获取当前完整URL 包括QUERY_STRING
-     * @author    ComingDemon
-     * @copyright 魔网天创信息科技
      *
      * @param int $type // 域名显示（1：域名，2：协议）
      *
      * @return string
+     * @author    ComingDemon
+     * @copyright 魔网天创信息科技
+     *
      */
-    public function request_url($type = 0)
+    public function requestUrl($type = 0)
     {
         if (PHP_SAPI == 'cli')
             $url = isset($_SERVER['argv'][1]) ? $_SERVER['argv'][1] : '';
@@ -1255,13 +1320,11 @@ class Bomber
         else
             $url = '';
 
-        return $type ? self::request_domain($type == 2) . $url : $url;
+        return $type ? self::requestDomain($type == 2) . $url : $url;
     }
 
     /**
      * 发起CURL请求
-     * @author    ComingDemon
-     * @copyright 魔网天创信息科技
      *
      * @param        $url
      * @param string $type
@@ -1270,9 +1333,20 @@ class Bomber
      * @param string $ua
      *
      * @return bool|mixed
+     * @author    ComingDemon
+     * @copyright 魔网天创信息科技
+     *
      */
-    public function curl($url, $type = 'get', $parm = [], $dataType = 'json', $ua = 'Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.75 Safari/537.36')
+    public function curl($url, $parm = [], $config = [], $func = null)
     {
+        //  请求类型
+        $config['method'] = $config['method'] ?? 'get';
+        //  定义参数
+        $config['dataType'] = $config['dataType'] ?? 'json';
+        //  定义代理头
+        $config['userAgent'] = $config['userAgent'] ?? 'Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.75 Safari/537.36';
+        //  预请求内容
+        $config['optionFunction'] = $config['optionFunction'] ?? null;
         // 初始化CURL
         $curl = curl_init();
         //  如果Curl支持IPv4，则设置Curl默认访问为IPv4，可解决超时问题
@@ -1283,17 +1357,24 @@ class Bomber
         //  设置Curl总执行动作的最长秒数，如果设置为0，则无限
         curl_setopt($curl, CURLOPT_TIMEOUT, 1200);
         // 请求类型
-        switch ($type) {
+        switch ($config['method']) {
             // 获取外链文件
             case 'file':
                 curl_setopt($curl, CURLOPT_URL, $url);
-                curl_setopt($curl, CURLOPT_USERAGENT, $ua);
+                curl_setopt($curl, CURLOPT_USERAGENT, $config['userAgent']);
                 curl_setopt($curl, CURLOPT_REFERER, $url);
                 curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
-                $file = curl_exec($curl);
+                //  请求前
+                if ($config['optionFunction'] && is_object($config['optionFunction']))
+                    $config['optionFunction'] ($curl);
+                $result = curl_exec($curl);
+                $status = curl_getinfo($curl);
                 curl_close($curl);
+                //  请求后
+                if ($func && is_object($func))
+                    $func($result, $status);
 
-                return is_file($file) === false ? false : $file;
+                return is_file($result) === false ? false : $result;
                 break;
             // GET请求|POST请求
             case 'get':
@@ -1321,15 +1402,21 @@ class Bomber
                     curl_setopt($curl, CURLOPT_SSLVERSION, 1);
                 }
                 curl_setopt($curl, CURLOPT_URL, $url);
-                curl_setopt($curl, CURLOPT_USERAGENT, $ua);
+                curl_setopt($curl, CURLOPT_USERAGENT, $config['userAgent']);
                 curl_setopt($curl, CURLOPT_REFERER, $url);
                 curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-                $content = curl_exec($curl);
+                //  请求前
+                if ($config['optionFunction'] && is_object($config['optionFunction']))
+                    $config['optionFunction'] ($curl);
+                $result = curl_exec($curl);
                 $status = curl_getinfo($curl);
                 curl_close($curl);
+                //  请求后
+                if ($func && is_object($func))
+                    $func($result, $status);
                 //  如果成功返回内容并且状态码为200表示成功
                 if (isset($status['http_code']) && $status['http_code'] == 200)
-                    return $dataType == 'json' ? json_decode($content) : $content;
+                    return $dataType == 'json' ? json_decode($result) : $result;
                 //  如果存在状态码表示访问成功但结果错误
                 else if (isset($status['http_code']))
                     return $status['http_code'];
@@ -1343,8 +1430,6 @@ class Bomber
 
     /**
      * 获取变量 支持过滤和默认值
-     * @author    ComingDemon
-     * @copyright 魔网天创信息科技
      *
      * @param array             $data    //数据源
      * @param false|string      $name    //字段名
@@ -1352,6 +1437,9 @@ class Bomber
      * @param array|string|null $filter  //过滤函数
      *
      * @return array|mixed
+     * @copyright 魔网天创信息科技
+     *
+     * @author    ComingDemon
      */
     public function arguer($data = [], $name = '', $default = null, $filter = null)
     {
@@ -1392,24 +1480,25 @@ class Bomber
 
         //  如果是数组或者对象
         if (is_object($data) || is_array($data))
-            return self::array_cast($data, $filter);
+            return self::arrayCast($data, $filter);
         // 强制类型转换和过滤
         else if ($data !== $default)
-            return self::type_cast($data, $filter);
+            return self::typeCast($data, $filter);
 
         return $data;
     }
 
     /**
      * 设置获取获取REQUEST参数
-     * @author    ComingDemon
-     * @copyright 魔网天创信息科技
      *
      * @param array|string $name    //变量名
      * @param mixed|null   $default //默认值
      * @param array|string $filter  //过滤方法
      *
      * @return array|mixed|string
+     * @author    ComingDemon
+     * @copyright 魔网天创信息科技
+     *
      */
     public function input($name = '', $default = null, $filter = '')
     {
@@ -1422,48 +1511,50 @@ class Bomber
 
     /**
      * 数组递归转换
-     * @author    ComingDemon
-     * @copyright 魔网天创信息科技
      *
      * @param $array
      * @param $type
      *
      * @return mixed
+     * @copyright 魔网天创信息科技
+     *
+     * @author    ComingDemon
      */
-    public function array_cast($array, $type)
+    public function arrayCast($array, $type)
     {
         $isObject = false;
         if (is_object($array)) {
             $isObject = true;
-            $array = self::object_to_array($array);
+            $array = self::objectToArray($array);
         }
 
-        $array = self::_array_cast($array, $type);
+        $array = self::_arrayCast($array, $type);
         if ($isObject)
-            $array = self::array_to_object($array);
+            $array = self::arrayToObject($array);
 
         return $array;
     }
 
-    protected function _array_cast($array, $type)
+    private function _arrayCast($array, $type)
     {
         foreach ($array as $key => $val)
-            $array[$key] = !is_array($val) ? self::type_cast($val, $type) : self::_array_cast($val, $type);
+            $array[$key] = !is_array($val) ? self::typeCast($val, $type) : self::_arrayCast($val, $type);
 
         return $array;
     }
 
     /**
      * 强制类型转换
-     * @author    ComingDemon
-     * @copyright 魔网天创信息科技
      *
      * @param string $data
      * @param string $type
      *
      * @return string
+     * @copyright 魔网天创信息科技
+     *
+     * @author    ComingDemon
      */
-    public function type_cast($data, $type)
+    public function typeCast($data, $type)
     {
         //  如果是对象函数则直接在体系内自定义
         if (gettype($type) == 'object')
@@ -1536,17 +1627,18 @@ class Bomber
 
     /**
      * 创建目录
-     * @author    ComingDemon
-     * @copyright 魔网天创信息科技
      *
      * @param $dir
      *
      * @return bool
+     * @author    ComingDemon
+     * @copyright 魔网天创信息科技
+     *
      */
-    public function dir_make($dir)
+    public function dirMake($dir)
     {
         if (!is_dir($dir)) {
-            if (!self::dir_make(dirname($dir)))
+            if (!self::dirMake(dirname($dir)))
                 return false;
             if (!mkdir($dir, 0777))
                 return false;
@@ -1557,21 +1649,22 @@ class Bomber
 
     /**
      * 清空目录
-     * @author    ComingDemon
-     * @copyright 魔网天创信息科技
      *
      * @param $dir
      *
      * @return bool
+     * @author    ComingDemon
+     * @copyright 魔网天创信息科技
+     *
      */
-    public function dir_clear($dir)
+    public function dirClear($dir)
     {
         $op = dir($dir);
         while (false != ($item = $op->read())) {
             if ($item == '.' || $item == '..')
                 continue;
             if (is_dir($op->path . '/' . $item)) {
-                self::clear($op->path . '/' . $item);
+                self::dirClear($op->path . '/' . $item);
                 rmdir($op->path . '/' . $item);
             }
             else
@@ -1583,14 +1676,15 @@ class Bomber
 
     /**
      * 获取目录中所有文件
-     * @author    ComingDemon
-     * @copyright 魔网天创信息科技
      *
      * @param $dir
      *
      * @return array
+     * @author    ComingDemon
+     * @copyright 魔网天创信息科技
+     *
      */
-    public function dir_list($dir)
+    public function dirList($dir)
     {
         $handle = opendir($dir . '.');
         //定义用于存储文件名的数组
@@ -1606,8 +1700,6 @@ class Bomber
 
     /**
      * 创建一个文件
-     * @author    ComingDemon
-     * @copyright 魔网天创信息科技
      *
      * @param        $file    //文件名称（包含完整后缀）
      * @param string $content //文件内容
@@ -1615,13 +1707,16 @@ class Bomber
      * @param        $type    //内容类型（比如base64）
      *
      * @return bool
+     * @copyright 魔网天创信息科技
+     *
+     * @author    ComingDemon
      */
-    public function file_create($file, $content = '', $dir = '', $type = null)
+    public function fileCreate($file, $content = '', $dir = '', $type = null)
     {
         //  如果是文件夹
         if ($dir) {
             //  创建文件夹
-            self::dir_make($dir);
+            self::dirMake($dir);
             //  打开文件
             $fopen = fopen($dir . $file, 'w');
         }
@@ -1649,15 +1744,16 @@ class Bomber
 
     /**
      * 从服务器下载文件
-     * @author    ComingDemon
-     * @copyright 魔网天创信息科技
      *
      * @param $file //文件名称
      * @param $name //下载名称（如果设置名称，则直接返回二进制内容）
      *
      * @return mixed
+     * @copyright 魔网天创信息科技
+     *
+     * @author    ComingDemon
      */
-    public function file_download($file, $name = false)
+    public function fileDownload($file, $name = false)
     {
         $file_type = strtolower(strstr($file, '.'));
         $file_dir = fopen($file, "r");
@@ -1683,8 +1779,6 @@ class Bomber
 
     /**
      * 上传文件到服务器（文件信息[$_FILE]，存放位置，存放文件名）
-     * @author    ComingDemon
-     * @copyright 魔网天创信息科技
      *
      * @param $file_info
      * @param $src_dir
@@ -1692,13 +1786,16 @@ class Bomber
      * @param $parm
      *
      * @return mixed
+     * @copyright 魔网天创信息科技
+     *
+     * @author    ComingDemon
      */
-    public function file_upload($file_info = [], $src_dir, $src_file, $parm = [])
+    public function fileUpload($file_info = [], $src_dir, $src_file, $parm = [])
     {
         //  分析附加参数
         $file_format = $parm['format'] ?? [];   //文件格式，数组['jpg','gif','png']
         $file_size = $parm['size'] ?? [0, 0]; //文件尺寸，数组[min,max]
-        $isMobile = self::is_mobile() && is_string($file_info);
+        $isMobile = self::isMobile() && is_string($file_info);
         //  移动版的话需要特殊处理
         if ($isMobile) {
             //  判断文件是否存在
@@ -1731,7 +1828,7 @@ class Bomber
         }
         //  判断文件存放目录（返回4则表示无法创建目录）
         if (!is_dir($src_dir)) {
-            $status = self::dir_make($src_dir);
+            $status = self::dirMake($src_dir);
             if (!$status)
                 return 500;
         }
@@ -1746,13 +1843,14 @@ class Bomber
 
     /**
      * 获取后缀
-     * @author    ComingDemon
-     * @copyright 魔网天创信息科技
      *
      * @param $content //名称
      * @param $tag     //分隔符
      *
      * @return string
+     * @copyright 魔网天创信息科技
+     *
+     * @author    ComingDemon
      */
     public function suffix($content, $tag = '.')
     {
@@ -1761,33 +1859,34 @@ class Bomber
 
     /**
      * 获取图片类型列表
-     * @author    ComingDemon
-     * @copyright 魔网天创信息科技
      * @return array
+     * @copyright 魔网天创信息科技
+     * @author    ComingDemon
      */
-    protected function image_type()
+    private function _imageType()
     {
         return [1 => 'gif', 2 => 'jpg', 3 => 'png', 4 => 'swf', 5 => 'psd', 6 => 'bmp', 7 => 'tiff', 8 => 'tiff', 9 => 'jpc', 10 => 'jp2', 11 => 'jpx', 12 => 'jb2', 13 => 'swc', 14 => 'iff', 15 => 'wbmp', 16 => 'xbm'];
     }
 
     /**
      * 获取图片对象
-     * @author    ComingDemon
-     * @copyright 魔网天创信息科技
      *
      * @param $mode
      * @param $src_img
      * @param $parm
      *
      * @return mixed
+     * @author    ComingDemon
+     * @copyright 魔网天创信息科技
+     *
      */
-    function image_object($mode = 'read', $src_img, $parm = [])
+    public function imageObject($mode = 'read', $src_img, $parm = [])
     {
         //  模式
         switch ($mode) {
             //  写入文件
             case 'write':
-                $object = $parm['object']??null;
+                $object = $parm['object'] ?? null;
                 $type = self::arguer('type', 'jpg', 'string', $parm);
                 $quality = self::arguer('quality', 60, 'quality', $parm);
                 switch ($type) {
@@ -1819,7 +1918,7 @@ class Bomber
                 //  读取文件
                 if (!empty($src_img) && file_exists($src_img)) {
                     $info = getimagesize($src_img);
-                    $imageType = self::image_type();
+                    $imageType = self::_imageType();
                     $type = $imageType ?? null;
                     $width = $info[0];
                     $height = $info[1];
@@ -1851,17 +1950,18 @@ class Bomber
 
     /**
      * 获取图片色调
-     * @author    ComingDemon
-     * @copyright 魔网天创信息科技
      *
      * @param     $src_img
      *
      * @return Convert|mixed
+     * @author    ComingDemon
+     * @copyright 魔网天创信息科技
+     *
      */
-    function image_hue($src_img)
+    public function imageHue($src_img)
     {
         //  获取文件信息
-        $info = self::image_object('read', $src_img);
+        $info = self::imageObject('read', $src_img);
         //  如果文件存在
         if ($info['object']) {
             $object = $info['object'];
@@ -1888,27 +1988,28 @@ class Bomber
                 'b' => round($bColorNum / $total),
             ];
             $background = '#' .
-                self::fill(2, dechex($colorAll['r'])) .
-                self::fill(2, dechex($colorAll['g'])) .
-                self::fill(2, dechex($colorAll['b']));
+                self::strFill(2, dechex($colorAll['r'])) .
+                self::strFill(2, dechex($colorAll['g'])) .
+                self::strFill(2, dechex($colorAll['b']));
 
-            return self::array_to_object(['hex' => $background, 'rgb' => [$colorAll['r'], $colorAll['g'], $colorAll['b']]]);
+            return self::arrayToObject(['hex' => $background, 'rgb' => [$colorAll['r'], $colorAll['g'], $colorAll['b']]]);
         }
 
-        return self::array_to_object(['hex' => '#000000', 'rgb' => [0, 0, 0]]);
+        return self::arrayToObject(['hex' => '#000000', 'rgb' => [0, 0, 0]]);
     }
 
     /**
      * 生成缩略图
-     * @author    ComingDemon
-     * @copyright 魔网天创信息科技
      *
      * @param     $src_img //变更文件
      * @param     $parm    //参数
      *
      * @return int|array
+     * @copyright 魔网天创信息科技
+     *
+     * @author    ComingDemon
      */
-    function image_thumb($src_img, $parm = [])
+    public function imageThumb($src_img, $parm = [])
     {
         if (!is_file($src_img))
             return 404;
@@ -1920,7 +2021,7 @@ class Bomber
         $jpgForce = isset($parm['jpgForce']) ? $parm['jpgForce'] : true;
         $jpgName = $jpgForce ? rtrim($src_img, self::suffix($src_img)) . 'jpg' : $src_img;
         //  创建原始对象
-        $imageInfo = self::image_object('read', $src_img);
+        $imageInfo = self::imageObject('read', $src_img);
         $imageType = $imageInfo['type'];
         switch ($mode) {
             //  强制变成固定大小
@@ -1973,7 +2074,7 @@ class Bomber
                 }
                 //  获取主色调
                 if (!$background)
-                    $background = self::image_hue($src_img)->rgb;
+                    $background = self::imageHue($src_img)->rgb;
                 //  缩放类型
                 $canvas = imagecreatetruecolor($width, $height);
                 if (in_array($imageType, ['gif', 'png'])) {
@@ -2057,7 +2158,7 @@ class Bomber
                 unlink($src_img);
         }
         else {
-            $foo = self::image_object('write', $src_img, ['object' => $image, 'quality' => 75, 'type' => $imageType]);
+            $foo = self::imageObject('write', $src_img, ['object' => $image, 'quality' => 75, 'type' => $imageType]);
             if (is_numeric($foo))
                 return $foo;
 
@@ -2073,15 +2174,16 @@ class Bomber
 
     /**
      * 图片水印 (水印支持图片或文字)
-     * @author    ComingDemon
-     * @copyright 魔网天创信息科技
      *
      * @param       $groundImage
      * @param array $parm
      *
      * @return array|int
+     * @copyright 魔网天创信息科技
+     *
+     * @author    ComingDemon
      */
-    function image_water($groundImage, $parm = [])
+    public function imageMark($groundImage, $parm = [])
     {
         //  水印位置，有10种状态，0为随机位置；1为顶端居左，2为顶端居中，3为顶端居右；4为中部居左，5为中部居中，6为中部居右；7为底端居左，8为底端居中，9为底端居右；
         $waterPos = $parm['waterPos'] ?? 9;
@@ -2111,7 +2213,7 @@ class Bomber
         //  读取水印文件
         if (!empty($waterImage) && file_exists($waterImage)) {
             $isWaterImage = true;
-            $waterInfo = self::image_object('read', $waterImage);
+            $waterInfo = self::imageObject('read', $waterImage);
             $waterW = $waterInfo['width'];  //取得水印图片的宽
             $waterH = $waterInfo['height'];  //取得水印图片的高
             //  取得水印图片的格式
@@ -2132,7 +2234,7 @@ class Bomber
         //  读取背景图片
         if (!empty($groundImage) && file_exists($groundImage)) {
             $info = getimagesize($groundImage);
-            $imageType = self::image_type();
+            $imageType = self::_imageType();
             $imgType = $imageType[$info[2]];
             $groundW = $info[0];    //取得背景图片的宽
             $groundH = $info[1];    //取得背景图片的高
@@ -2141,12 +2243,12 @@ class Bomber
                 case 'gif':
                     if ($imgType == 'gif' && $gifSkip)
                         return ['img' => $groundImage];
-                    $fooInfo = self::image_object('read', $groundImage);
+                    $fooInfo = self::imageObject('read', $groundImage);
                     $fooObj = $fooInfo['object'];
                     $groundObj = imagecreatetruecolor($groundW, $groundH);
                     //  平铺纹理
                     if ($textureImage && $jpgForce) {
-                        $textureInfo = self::image_object('read', $textureImage);
+                        $textureInfo = self::imageObject('read', $textureImage);
                         $textureObj = $textureInfo['object'];
                         imagesettile($groundObj, $textureObj);
                         imagefilledrectangle($groundObj, 0, 0, $groundW, $groundH, IMG_COLOR_TILED);
@@ -2158,12 +2260,12 @@ class Bomber
                     $groundObj = imagecreatefromjpeg($groundImage);
                     break;
                 case 'png':
-                    $fooInfo = self::image_object('read', $groundImage);
+                    $fooInfo = self::imageObject('read', $groundImage);
                     $fooObj = $fooInfo['object'];
                     $groundObj = imagecreatetruecolor($groundW, $groundH);
                     //  平铺纹理
                     if ($textureImage && $jpgForce) {
-                        $textureInfo = self::image_object('read', $textureImage);
+                        $textureInfo = self::imageObject('read', $textureImage);
                         $textureObj = $textureInfo['object'];
                         imagesettile($groundObj, $textureObj);
                         imagefilledrectangle($groundObj, 0, 0, $groundW, $groundH, IMG_COLOR_TILED);
@@ -2285,7 +2387,7 @@ class Bomber
 
         //  开始保存
         if (!$jpgForce) {
-            $foo = self::image_object('write', $groundImage, ['object' => $groundObj, 'quality' => $quality, 'type' => $imgType]);
+            $foo = self::imageObject('write', $groundImage, ['object' => $groundObj, 'quality' => $quality, 'type' => $imgType]);
             if (is_numeric($foo))
                 return $foo;
         }
@@ -2301,20 +2403,21 @@ class Bomber
         //  echo file_get_contents($jpgName);
 
         //  返回水印图片地址
-        return self::array_to_object(['img' => $jpgName, 'type' => $jpgForce ? 'jpeg' : $imgType]);
+        return self::arrayToObject(['img' => $jpgName, 'type' => $jpgForce ? 'jpeg' : $imgType]);
     }
 
     /**
      * 图片合并
-     * @author    ComingDemon
-     * @copyright 魔网天创信息科技
      *
      * @param       $imgList
      * @param array $parm
      *
      * @return mixed
+     * @copyright 魔网天创信息科技
+     *
+     * @author    ComingDemon
      */
-    function image_merge($imgList, $parm = [])
+    public function imageMerge($imgList, $parm = [])
     {
         //  画布宽高
         $bg_w = $parm['width'] ?? 720;
@@ -2322,7 +2425,7 @@ class Bomber
         //  创建背景图片
         $background = imagecreatetruecolor($bg_w, $bg_h);
         //  生成图片类型
-        $img = $parm['img']??'png';
+        $img = $parm['img'] ?? 'png';
         //  图片质量
         $quality = $parm['quality'] ?? 60;
         //  填充透明背景色
@@ -2331,14 +2434,14 @@ class Bomber
         foreach ($imgList as $key => $val) {
             //  自定义图片属性
             if (is_array($val)) {
-                $start_x = $val['x']??0;
-                $start_y = $val['y']??0;
+                $start_x = $val['x'] ?? 0;
+                $start_y = $val['y'] ?? 0;
             }
             else {
                 $start_x = 0;
                 $start_y = 0;
             }
-            $foo = self::image_object('read', $val['src']);
+            $foo = self::imageObject('read', $val['src']);
             imagecopyresampled($background, $foo['object'], 0, 0, $start_x, $start_y, $bg_w, $bg_h, $bg_w, $bg_h);
             imagesavealpha($background, true);
         }
@@ -2346,8 +2449,8 @@ class Bomber
         $type = $parm['type'] ?? 'base64';
         //  开始保存到物理文件
         if (isset($parm['path'])) {
-            self::file_create($parm['path'], '');
-            self::image_object('write', $parm['path'], ['object' => $background, 'quality' => $quality, 'type' => $img]);
+            self::fileCreate($parm['path'], '');
+            self::imageObject('write', $parm['path'], ['object' => $background, 'quality' => $quality, 'type' => $img]);
         }
         //  返回类型
         switch ($type) {
@@ -2369,12 +2472,13 @@ class Bomber
 
     /**
      * 读取BMP文件
-     * @author    ComingDemon
-     * @copyright 魔网天创信息科技
      *
      * @param $filename
      *
      * @return bool|resource
+     * @author    ComingDemon
+     * @copyright 魔网天创信息科技
+     *
      */
     public function imagecreatefrombmp($filename)
     {
@@ -2471,15 +2575,16 @@ class Bomber
     /**
      * 创建bmp格式图片
      *
-     * @author    ComingDemon
-     * @copyright 魔网天创信息科技
-     *
      * @param resource $im          图像资源
      * @param string   $filename    如果要另存为文件，请指定文件名，为空则直接在浏览器输出
      * @param int      $bit         图像质量(1、4、8、16、24、32位)
      * @param int      $compression 压缩方式，0为不压缩，1使用RLE8压缩算法进行压缩
+     *
+     * @author    ComingDemon
+     * @copyright 魔网天创信息科技
+     *
      */
-    function imagebmp(&$im, $filename = '', $bit = 8, $compression = 0)
+    public function imagebmp(&$im, $filename = '', $bit = 8, $compression = 0)
     {
         if (!in_array($bit, [1, 4, 8, 16, 24, 32]))
             $bit = 8;
