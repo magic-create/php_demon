@@ -825,11 +825,8 @@ class Bomber
      */
     public function msdate($format, $mstime = DEMON_MSTIME)
     {
-        //  如果是字符串表示是函数
-        if (is_string($mstime))
-            $mstime =
-                //  除以一千取出秒部分和毫秒部分
-            $info = explode('.', (int)$mstime / 1000);
+        //  除以一千取出秒部分和毫秒部分
+        $info = explode('.', (int)$mstime / 1000);
         //  将所有反斜杠的f变成其他字符串临时保存
         if (strpos($format, '\f') !== false) {
             $format = str_replace('\\f', '(.ω.)', $format);

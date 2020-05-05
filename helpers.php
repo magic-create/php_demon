@@ -1,4 +1,5 @@
 <?php
+
 use \Demon\Library\Bomber;
 
 //  修复神奇的精度问题
