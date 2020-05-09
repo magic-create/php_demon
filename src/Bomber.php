@@ -698,37 +698,27 @@ class Bomber
     /**
      * 生成一个订单码
      *
-     * @param int    $type    //订单码类型
-     * @param int    $length  //订单码长度
-     * @param bool   $isTime  //是否带时间前缀
-     * @param string $pre     //额外前缀（最大不能超过4位数）
-     * @param string $preType //前缀位置（center:中间,left:左侧）
+     * @param int    $length
+     * @param string $pre
      *
-     * @return int|string
-     * @author    ComingDemon
+     * @return string
      * @copyright 魔网天创信息科技
-     *
+     * @author    ComingDemon
      */
-    public function orderBuild($type = 0, $length = 20, $isTime = true, $pre = '', $preType = 'center')
+    public function orderBuild($length = 24, $pre = '')
     {
-        //  前缀是时间
-        if ($isTime) {
-            $time = date('YmdHis');
-            $length -= strlen($time);
-            if ($length <= 3)
-                return '';
-            $pre = $time;
-        }
-        //  否则调用自定义前缀
-        else {
-            $pre = str_pad($pre, 4, '0', STR_PAD_LEFT);
-            $length -= strlen($pre);
-            if ($length <= 3)
-                return '';
-        }
+        //  根据前缀来识别随机串长度，前缀长度建议4位就行了
+        $remain = $length - mb_strlen($pre);
+        if ($remain <= 0)
+            return mb_substr($pre, 0, $length);
+        //  一般时间长度为14位
+        $string = $pre . date('YmdHis');
+        $remain = $length - mb_strlen($string);
+        if ($remain <= 0)
+            return mb_substr($string, 0, $length);
 
-        //  返回最终码
-        return !$isTime ? $preType == 'center' ? str_pad($type, 3, '0', STR_PAD_LEFT) . $pre . self::rand($length - 3, 'num') : $pre . self::rand($length, 'num') : $pre . str_pad($type, 3, '0', STR_PAD_LEFT) . self::rand($length - 3, 'num');
+        //  返回拼接随机内容
+        return $string . self::rand($remain, 'num');
     }
 
     /**
