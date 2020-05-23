@@ -507,28 +507,35 @@ class Bomber
      */
     public function rand($length = 6, $type = 'all')
     {
+        $key = '';
         if (!$length)
             return '';
-        switch ($type) {
-            //  全部
-            case 'all':
-                $pattern = '1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLOMNOPQRSTUVWXYZ';
-                break;
-            //  数字
-            case 'num':
-                $pattern = '1234567890';
-                break;
-            //  字母
-            case 'letter':
-                $pattern = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLOMNOPQRSTUVWXYZ';
-                break;
-            //  自定义
-            default:
-                $pattern = $type;
+        // 中文
+        if ($type == 'chinese') {
+            for ($i = 0; $i < $length; $i++)
+                $key .= iconv('GB2312', 'UTF-8', chr(mt_rand(0xB0, 0xD0)) . chr(mt_rand(0xA1, 0xF0)));
         }
-        $key = '';
-        for ($i = 0; $i < $length; $i++)
-            $key .= $pattern[mt_rand(0, strlen($pattern) - 1)];
+        else {
+            switch ($type) {
+                //  全部
+                case 'all':
+                    $pattern = '1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLOMNOPQRSTUVWXYZ';
+                    break;
+                //  数字
+                case 'num':
+                    $pattern = '1234567890';
+                    break;
+                //  字母
+                case 'letter':
+                    $pattern = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLOMNOPQRSTUVWXYZ';
+                    break;
+                //  自定义
+                default:
+                    $pattern = $type;
+            }
+            for ($i = 0; $i < $length; $i++)
+                $key .= $pattern[mt_rand(0, strlen($pattern) - 1)];
+        }
 
         return (string)$key;
     }
