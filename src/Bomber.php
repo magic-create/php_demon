@@ -519,7 +519,7 @@ class Bomber
             switch ($type) {
                 //  全部
                 case 'all':
-                    $pattern = '1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLOMNOPQRSTUVWXYZ';
+                    $pattern = '1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
                     break;
                 //  数字
                 case 'num':
@@ -527,7 +527,7 @@ class Bomber
                     break;
                 //  字母
                 case 'letter':
-                    $pattern = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLOMNOPQRSTUVWXYZ';
+                    $pattern = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
                     break;
                 //  自定义
                 default:
@@ -997,6 +997,49 @@ class Bomber
             return $result;
         }
         else return substr($result, 0, 8) == substr($key, 8, 8) && substr($result, -8, 8) == substr($key, 16, 8) ? str_replace('<<\>>', '?', substr(substr($result, 8), 0, -8)) : '';
+    }
+
+    /**
+     * 令牌生成（可以用做邀请码或其他内容，如果需要解码则需要相同的种子和补位规则）
+     *
+     * @param        $number
+     * @param int    $type
+     * @param string $seed
+     * @param string $seam
+     * @param int    $length
+     *
+     * @return float|int|string
+     * @author    ComingDemon
+     * @copyright 魔网天创信息科技
+     */
+    public function token($number, $type = 1, $seed = '123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', $seam = '0', $length = 6)
+    {
+        //  计算种子长度来锚定进制精度
+        $scale = mb_strlen($seed);
+        //  解码
+        if ($type != 1) {
+            if (strrpos($number, $seam) !== false)
+                $code = substr($number, strrpos($number, $seam) + 1);
+            $len = strlen($number);
+            $number = strrev($number);
+            $num = 0;
+            for ($i = 0; $i < $len; $i++)
+                $num += strpos($seed, $number[$i]) * pow($scale, $i);
+
+            return $num;
+        }
+        //  加码
+        else {
+            $code = '';
+            while ($number > 0) {
+                $mod = $number % $scale;
+                $number = ($number - $mod) / $scale;
+                $code = $seed[$mod] . $code;
+            }
+            $code = str_pad($code, $length, $seam, STR_PAD_LEFT);
+
+            return $code;
+        }
     }
 
     /**
