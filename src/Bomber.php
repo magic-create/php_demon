@@ -193,7 +193,7 @@ class Bomber
      */
     public function objectToArray($object)
     {
-        return json_decode(json_encode($object), true);;
+        return json_decode(json_encode($object), true);
     }
 
     /**
@@ -208,7 +208,7 @@ class Bomber
      */
     public function arrayToObject($array)
     {
-        return json_decode(json_encode($array));;
+        return json_decode(json_encode($array));
     }
 
     /**
@@ -776,6 +776,42 @@ class Bomber
 
         //  返回结果
         return $string;
+    }
+
+    /**
+     * 获取字符编码
+     *
+     * @param $string
+     *
+     * @return string
+     * @author    ComingDemon
+     * @copyright 魔网天创信息科技
+     */
+    public function strCode($string)
+    {
+        //  转换为GBK
+        $gbk = iconv('UTF-8', 'GBK', $string);
+
+        //  如果相同则表示原来就是UFT8否则就是GBK
+        return iconv('GBK', 'UTF-8', $gbk) == $string ? 'UTF-8' : 'GBK';
+    }
+
+    /**
+     * 获取字符长度（中文一律当做2个字符统计）
+     *
+     * @param $string
+     *
+     * @return int
+     * @author    ComingDemon
+     * @copyright 魔网天创信息科技
+     */
+    public function strLen($string)
+    {
+        //  如果是UTF8就转换为GBK再计算
+        if (self::strCode($string) == 'UTF-8')
+            $string = iconv('UTF-8', 'GBK', $string);
+
+        return strlen($string);
     }
 
     /**
@@ -1724,7 +1760,7 @@ class Bomber
                 $result = self::regexp($content, 'base64');
                 if (!$result)
                     return false;
-                $content = base64_decode(str_replace($result[0], '', $content));
+                $content = base64_decode(explode(',', $content)[1]);
                 break;
         }
 
