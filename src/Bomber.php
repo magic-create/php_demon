@@ -1307,7 +1307,7 @@ class Bomber
         $result = function($result) use ($content, $func) {
             return !$result ? ($func ? $func($content) : false) : $result;
         };
-        if ($rules == 'json') {
+        if ($rule == 'json') {
             if (!is_string($content))
                 return $result(false);
             $content = json_decode($content);
