@@ -1991,8 +1991,7 @@ class Bomber
                 //  读取文件
                 if (!empty($src_img) && file_exists($src_img)) {
                     $info = getimagesize($src_img);
-                    $imageType = self::_imageType();
-                    $type = $imageType ?? null;
+                    $type = self::_imageType()[$info[2]] ?? null;
                     $width = $info[0];
                     $height = $info[1];
                     //  取得水印图片的格式
