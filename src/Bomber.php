@@ -11,6 +11,7 @@
 namespace Demon\Library;
 
 use stdClass;
+use voku\helper\AntiXSS;
 
 class Bomber
 {
@@ -1679,7 +1680,7 @@ class Bomber
                 break;
             //  防止xss
             case 'xss':
-                $data = (string)str_replace('_x000D_', '', preg_replace('/<(.*?)>/', '', addslashes(trim($data))));
+                $data = (string)str_replace('_x000D_', '', (new AntiXSS())->xss_clean($data));
                 break;
             // 将HTML标签实体化
             case 'entity':
