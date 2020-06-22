@@ -13,10 +13,6 @@
         }
     ],
     "license": "MIT",
-    "require": {
-        "php": "^7.2",
-        "voku/anti-xss": "^4.*"
-    },
     "autoload": {
         "files": [
             "helpers.php"
