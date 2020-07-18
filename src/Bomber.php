@@ -1454,7 +1454,7 @@ class Bomber
             case 'get':
             case 'post':
                 // 如果是GET请求的话
-                if ($type == 'get') {
+                if ($config['method'] == 'get') {
                     //  拼接URL参数
                     if ($parm) {
                         $url .= stripos($url, '?') === false ? '?' : '&';
@@ -1490,7 +1490,7 @@ class Bomber
                     $func($result, $status);
                 //  如果成功返回内容并且状态码为200表示成功
                 if (isset($status['http_code']) && $status['http_code'] == 200)
-                    return $dataType == 'json' ? json_decode($result) : $result;
+                    return $config['dataType'] == 'json' ? json_decode($result) : $result;
                 //  如果存在状态码表示访问成功但结果错误
                 else if (isset($status['http_code']))
                     return $status['http_code'];
