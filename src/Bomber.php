@@ -1458,7 +1458,13 @@ class Bomber
                     //  拼接URL参数
                     if ($parm) {
                         $url .= stripos($url, '?') === false ? '?' : '&';
-                        $url .= is_string($parm) ? $parm : urlencode(http_build_query($parm));
+                        if (!is_string($parm)) {
+                            foreach ($parm as &$val) {
+                                $val = urlencode($val);
+                            }
+                            $parm = http_build_query($parm);
+                        }
+                        $url .= $parm;
                     }
                     //  允许重定向
                     curl_setopt($curl, CURLOPT_FOLLOWLOCATION, 1);
