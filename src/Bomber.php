@@ -562,7 +562,7 @@ class Bomber
             $content = strtolower(substr($content, 8, 16));
         //  如果不是MD5则加密为16位MD5
         else if (!$md5)
-            $content = strtolower(substr(md5($content), 8, 16));
+            $content = strtolower(self::md5($content));
 
         //  操作动作
         $action = $parm['action'] ?? 'hash';
@@ -1254,6 +1254,26 @@ class Bomber
         $ip = $long ? [$ip, $long] : ['0.0.0.0', 0];
 
         return $ip[$type];
+    }
+
+    /**
+     * 获取MD5
+     *
+     * @param      $content
+     * @param bool $cut
+     * @param bool $int
+     *
+     * @return false|string
+     * @author    ComingDemon
+     * @copyright 魔网天创信息科技
+     */
+    public function md5($content, $cut = true, $int = false)
+    {
+        //  获取MD5
+        $md5 = !$cut ? md5($content) : substr(md5($content), 8, 16);
+
+        //  返回类型
+        return !$int ? $md5 : base_convert($md5, 16, 10);
     }
 
     /**
