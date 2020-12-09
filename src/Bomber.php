@@ -760,20 +760,39 @@ class Bomber
     public function strMask($name, $parm = [])
     {
         //  字符集
-        $encoding = $parm['encoding'] ?? 'utf-8';
+        $encoding = strtolower($parm['encoding'] ?? 'utf-8');
+        //  定义掩码
+        $mask = $parm['mask'] ?? '*';
         //  前缀长度
-        $firstLength = isset($parm['first']) ? $parm['first'] : 1;
+        $firstLength = $parm['first'] ?? 1;
         //  后缀长度
-        $lastLength = isset($parm['last']) ? $parm['last'] : 1;
+        $lastLength = $parm['last'] ?? 1;
+        //  当不足时哪个方向设空
+        $reserve = strtolower($parm['reserve'] ?? 'first');
+        //  最小长度
+        $minLength = $parm['min'] ?? null;
+        //  最大长度
+        $maxLength = $parm['max'] ?? null;
+        //  固定长度
+        $fixLength = $parm['length'] ?? null;
         //  获取当前字符长度
         $strlen = mb_strlen($name, $encoding);
+        //  当长度恰好或小于设定的长度则将小方向设置为空
+        $firstLength = $firstLength >= $strlen ? 0 : $firstLength;
+        $lastLength = $lastLength >= $strlen ? 0 : $lastLength;
+        if ($strlen <= $firstLength + $lastLength)
+            $reserve == 'auto' ? ($firstLength >= $lastLength ? $lastLength = 0 : $firstLength = 0) : ($reserve == 'first' ? $lastLength = 0 : $firstLength = 0);
+        //  明文长度
+        $showLength = $firstLength + $lastLength;
         //  截取前面的字符
         $firstStr = mb_substr($name, 0, $firstLength, $encoding);
         $lastStr = mb_substr($name, -($lastLength), $lastLength, $encoding);
-        //  如果总长度不足，则把尾部都变成*
-        if ($strlen <= $firstLength + $lastLength)
-            $string = self::strFill($firstLength + $lastLength, $firstStr, 'right', '*');
-        else $string = self::strFill($strlen - mb_strlen($lastStr, $encoding), $firstStr, 'right', '*') . $lastStr;
+        //  掩码长度
+        $maskLength = $fixLength ? $fixLength - $showLength : $strlen - $showLength;
+        $maskLength = $maxLength ? min($maxLength - $showLength, $maskLength) : $maskLength;
+        $maskLength = $minLength ? max($minLength - $showLength, $maskLength) : $maskLength;
+        //  掩码拼接
+        $string = $firstStr . self::strFill($maskLength, null, 'right', $mask) . $lastStr;
 
         //  返回结果
         return $string;
@@ -816,21 +835,47 @@ class Bomber
     }
 
     /**
-     * 不足0，位数补齐
+     * 字符串填充（类似str_pad，但支持中文）
      *
      * @param $pre
      * @param $str
      * @param $type
-     * @param $zero
+     * @param $fill
      *
      * @return string
      * @copyright 魔网天创信息科技
      *
      * @author    ComingDemon
      */
-    public function strFill($pre, $str, $type = 'left', $zero = '0')
+    public function strFill($pre, $str, $type = 'left', $fill = '0')
     {
-        return str_pad($str, $pre, $zero, $type == 'left' ? STR_PAD_LEFT : STR_PAD_RIGHT);
+        //  获取当前字符串长度
+        $strlen = mb_strlen($str);
+        //  如果不足位数
+        if ($strlen < $pre) {
+            $differ = $pre - $strlen;
+            switch (strtolower($type)) {
+                //  右侧补齐
+                case 'right':
+                case STR_PAD_RIGHT:
+                    return $str . str_repeat($fill, $differ);
+                    break;
+                //  左侧补齐
+                case 'left':
+                case STR_PAD_LEFT:
+                    return str_repeat($fill, $differ) . $str;
+                    break;
+                //  居中补齐
+                case 'center':
+                case STR_PAD_BOTH:
+                default:
+                    return str_repeat($fill, $differ / 2) . $str . str_repeat($fill, $differ - $differ / 2);
+                    break;
+            }
+        }
+
+        //  直接返回
+        return $str;
     }
 
     /**
@@ -914,7 +959,15 @@ class Bomber
      */
     public function timeBuild($rule, $format = 'Y-m-d H:i:s', $time = DEMON_MSTIME, $type = 'mstime')
     {
-        $ratio = $type == 'mstime' ? 1000 : 1;
+        $ratio = 1;
+        switch ($type) {
+            case 'mstime':
+                $ratio = 1000;
+                break;
+            case 'date':
+                $time = strtotime($time);
+                break;
+        }
 
         return strtotime(date($format, strtotime($rule, $time / $ratio))) * $ratio;
     }
