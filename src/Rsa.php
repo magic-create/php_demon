@@ -8,7 +8,7 @@
  * Time: 10:21
  */
 
-namespace App\Libraries\Demon;
+namespace Demon\Library;
 
 class Rsa
 {
@@ -28,7 +28,6 @@ class Rsa
      * @return $this
      * @copyright 魔网天创信息科技
      * @author    ComingDemon
-     * @internal  param array $options //参数
      *
      */
     static function instance()

@@ -11,7 +11,6 @@
 namespace Demon\Library;
 
 use stdClass;
-use voku\helper\AntiXSS;
 
 class Bomber
 {
@@ -876,6 +875,100 @@ class Bomber
 
         //  直接返回
         return $str;
+    }
+
+    /**
+     * 字符串转图片
+     *
+     * @param        $str
+     * @param string $type
+     * @param array  $parm
+     *
+     * @return string
+     *
+     * @author    ComingDemon
+     * @copyright 魔网天创信息科技
+     */
+    public function strImage($str, $type = 'svg', $parm = [])
+    {
+        //  字体文件
+        $font = $parm['font'] ?? '';
+        //  高度
+        $height = $parm['height'] ?? 128;
+        //  字体大小
+        $size = $parm['size'] ?? $height / 2;
+        //  宽度
+        $width = $parm['width'] ?? null;
+        if ($width === null) {
+            $i = 0;
+            foreach (mb_str_split($str) as $val)
+                $i += (self::regexp(strlen($val), 'chs') ? 1 : (is_numeric($val) ? 0.64 : 0.84));
+            $width = max($height, ($i - 1) * $size + $height);
+        }
+        //  微调位置
+        $offsetX = $parm['offsetX'] ?? 0;
+        $offsetY = $parm['offsetX'] ?? 0;
+        //  动态背景色
+        $calc = $parm['calc'] ?? false;
+        //  背景颜色
+        $background = $parm['background'] ?? '#ffffff';
+        if ($calc) {
+            $total = unpack('L', hash('adler32', $str, true))[1];
+            $conver = (new Color())->hsv($total % 360 / 360, 0.3, 0.9);
+            $background = '#' . $conver->hsv2hex()->hex;
+        }
+        //  文字颜色
+        $color = $parm['color'] ?? '#000000';
+        //  图片格式
+        $type = strtolower($type);
+        switch ($type) {
+            //  SVG
+            case 'svg':
+            case 'xml':
+            case 'svg+xml':
+                $type = 'svg+xml';
+                $content = '<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="' . $width . '" height="' . $height . '"><rect fill="' . $background . '" x="0" y="0" width="' . $width . '" height="' . $height . '"></rect><text x="' . ($width / 2) . '" y="' . ($height / 2) . '" font-size="' . $size . '" text-copy="comingdemon" fill="' . $color . '" text-copy="demon" text-anchor="middle" alignment-baseline="central">' . $str . '</text></svg>';
+                break;
+            //  其他
+            default:
+                //  字体大小单位
+                $size = $size / 96 * 72;
+                //  创建图片
+                $img = imagecreate($width, $height);
+                //  设置背景色
+                imagecolorallocate($img, hexdec(substr($background, 1, 2)), hexdec(substr($background, 3, 2)), hexdec(substr($background, 5, 2)));
+                //  设置文字颜色
+                $textColor = imagecolorallocate($img, hexdec(substr($color, 1, 2)), hexdec(substr($color, 3, 2)), hexdec(substr($color, 5, 2)));
+                //  设置文字样式
+                imagettftext($img, $size, 0, ($height - $size) / (self::regexp(mb_substr($str, 0, 1), 'chs') ? 2.5 : 2.3) + $offsetX, ($height + $size) / 2 + $offsetY, $textColor, $font, $str);
+                //  打开缓冲区
+                ob_start();
+                //  支持类型
+                switch ($type) {
+                    case 'png':
+                        imagepng($img);
+                        break;
+                    case 'gif':
+                        imagegif($img);
+                        break;
+                    case 'bmp':
+                        self::imagebmp($img);
+                        break;
+                    case 'jpg':
+                    case 'jpeg':
+                    default :
+                        $type = 'jpeg';
+                        imagejpeg($img);
+                }
+                //  获取缓冲区内容
+                $content = ob_get_contents();
+                //  清理缓冲区
+                ob_end_clean();
+                break;
+        }
+
+        //  返回内容
+        return "data:image/{$type};base64," . base64_encode($content);
     }
 
     /**
@@ -2110,7 +2203,7 @@ class Bomber
      * @copyright 魔网天创信息科技
      *
      */
-    public function imageHue($src_img)
+    public function imageColor($src_img)
     {
         //  获取文件信息
         $info = self::imageObject('read', $src_img);
@@ -2134,20 +2227,13 @@ class Bomber
                     $total++;
                 }
             }
-            $colorAll = [
-                'r' => round($rColorNum / $total),
-                'g' => round($gColorNum / $total),
-                'b' => round($bColorNum / $total),
-            ];
-            $background = '#' .
-                self::strFill(2, dechex($colorAll['r'])) .
-                self::strFill(2, dechex($colorAll['g'])) .
-                self::strFill(2, dechex($colorAll['b']));
 
-            return self::arrayToObject(['hex' => $background, 'rgb' => [$colorAll['r'], $colorAll['g'], $colorAll['b']]]);
+            //  返回计算结果
+            return ['r' => round($rColorNum / $total), 'g' => round($gColorNum / $total), 'b' => round($bColorNum / $total)];
         }
 
-        return self::arrayToObject(['hex' => '#000000', 'rgb' => [0, 0, 0]]);
+        //  返回错误结果
+        return ['r' => 0, 'g' => 0, 'b' => 0];
     }
 
     /**
@@ -2226,7 +2312,7 @@ class Bomber
                 }
                 //  获取主色调
                 if (!$background)
-                    $background = self::imageHue($src_img)->rgb;
+                    $background = self::imageColor($src_img);
                 //  缩放类型
                 $canvas = imagecreatetruecolor($width, $height);
                 if (in_array($imageType, ['gif', 'png'])) {
@@ -2235,7 +2321,7 @@ class Bomber
                     imagesavealpha($canvas, true);
                 }
                 else {
-                    imagefill($canvas, 0, 0, imagecolorallocate($canvas, $background[0], $background[1], $background[2]));
+                    imagefill($canvas, 0, 0, imagecolorallocate($canvas, $background['r'], $background['g'], $background['b']));
                     imagecopyresampled($canvas, $imageInfo['object'], $x, $y, 0, 0, $dst_width, $dst_height, $src_width, $src_height);
                 }
                 $image = $canvas;
