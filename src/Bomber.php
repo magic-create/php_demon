@@ -642,6 +642,42 @@ class Bomber
         //  返回结果
         return round($value * $ratio) / $ratio;
     }
+	
+	
+    /**
+     * 获取随机小数
+     *
+     * @param     $min
+     * @param     $max
+     * @param int $scale
+     *
+     * @return float|int|string
+     *
+     * @copyright 魔网天创信息科技
+     * @author    ComingDemon
+     */
+    public function doubleRand($min, $max, $scale = 0)
+    {
+        $isString = is_string($max);
+        $sMin = $isString ? $min : strval($min);
+        $sMax = $isString ? $max : strval($max);
+        //  对比大小
+        switch (bccomp($sMin, $sMax, $scale * 2)) {
+            //  相等
+            case 0:
+                return $min;
+                break;
+            //  相反
+            case 1:
+                list($sMin, $sMax) = [$sMax, $sMin];
+                break;
+        }
+        //  随机数
+        $rand = self::doublePrecision(bcadd($sMin, bcmul(mt_rand() / mt_getrandmax(), bcsub($sMax, $sMin, $scale), $scale + 1), $scale + 1), $scale, 'round');
+
+        //  返回结果
+        return $isString ? $rand : (double)$rand;
+    }
 
     /**
      * 数字节点转字符串
