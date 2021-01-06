@@ -11,6 +11,7 @@
 namespace Demon\Library;
 
 use stdClass;
+use voku\helper\AntiXSS;
 
 class Bomber
 {
