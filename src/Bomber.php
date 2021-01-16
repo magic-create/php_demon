@@ -10,6 +10,7 @@
 
 namespace Demon\Library;
 
+use Closure;
 use stdClass;
 use voku\helper\AntiXSS;
 
@@ -643,8 +644,8 @@ class Bomber
         //  返回结果
         return round($value * $ratio) / $ratio;
     }
-	
-	
+
+
     /**
      * 获取随机小数
      *
@@ -670,7 +671,7 @@ class Bomber
                 break;
             //  相反
             case 1:
-                list($sMin, $sMax) = [$sMax, $sMin];
+                [$sMin, $sMax] = [$sMax, $sMin];
                 break;
         }
         //  随机数
@@ -1637,6 +1638,12 @@ class Bomber
         switch ($config['method']) {
             // 获取外链文件
             case 'file':
+                // HTTPS特殊处理
+                if (stripos($url, 'https://') !== false) {
+                    curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+                    curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+                    curl_setopt($curl, CURLOPT_SSLVERSION, 1);
+                }
                 curl_setopt($curl, CURLOPT_URL, $url);
                 curl_setopt($curl, CURLOPT_USERAGENT, $config['userAgent']);
                 curl_setopt($curl, CURLOPT_REFERER, $url);
@@ -1648,10 +1655,10 @@ class Bomber
                 $status = curl_getinfo($curl);
                 curl_close($curl);
                 //  请求后
-                if ($func && is_object($func))
-                    $func($result, $status);
+                if ($func && is_callable($func))
+                    return call_user_func($func, $result, $status);
 
-                return is_file($result) === false ? false : $result;
+                return isset($status['http_code']) && $status['http_code'] == 200 ? $result : false;
                 break;
             // GET请求|POST请求
             case 'get':
@@ -1695,8 +1702,8 @@ class Bomber
                 $status = curl_getinfo($curl);
                 curl_close($curl);
                 //  请求后
-                if ($func && is_object($func))
-                    $func($result, $status);
+                if ($func && is_callable($func))
+                    return call_user_func($func, $result, $status);
                 //  如果成功返回内容并且状态码为200表示成功
                 if (isset($status['http_code']) && $status['http_code'] == 200)
                     return $config['dataType'] == 'json' ? json_decode($result) : $result;
@@ -2967,5 +2974,21 @@ class Bomber
             fwrite($fp, $bmp_data);
             fclose($fp);
         }
+    }
+
+    /**
+     * 判断是否是函数
+     *
+     * @param      $var
+     * @param bool $name
+     *
+     * @return bool
+     *
+     * @author    ComingDemon
+     * @copyright 魔网天创信息科技
+     */
+    function isFunction($var, $name = true)
+    {
+        return ($name && is_string($var) && function_exists($var)) || (is_object($var) && ($var instanceof Closure));
     }
 }
