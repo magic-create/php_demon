@@ -1655,7 +1655,7 @@ class Bomber
                 $status = curl_getinfo($curl);
                 curl_close($curl);
                 //  请求后
-                if ($func && is_callable($func))
+                if ($func && self::isFunction($func))
                     return call_user_func($func, $result, $status);
 
                 return isset($status['http_code']) && $status['http_code'] == 200 ? $result : false;
@@ -1702,7 +1702,7 @@ class Bomber
                 $status = curl_getinfo($curl);
                 curl_close($curl);
                 //  请求后
-                if ($func && is_callable($func))
+                if ($func && self::isFunction($func))
                     return call_user_func($func, $result, $status);
                 //  如果成功返回内容并且状态码为200表示成功
                 if (isset($status['http_code']) && $status['http_code'] == 200)
