@@ -77,6 +77,25 @@ class Bomber
     }
 
     /**
+     * 获取对象全部键
+     *
+     * @param $object
+     *
+     * @return array
+     *
+     * @author    ComingDemon
+     * @copyright 魔网天创信息科技
+     */
+    public function objectKeys($object)
+    {
+        $keys = [];
+        foreach ($object as $key => $val)
+            $keys[] = $key;
+
+        return $keys;
+    }
+
+    /**
      * 对象克隆
      *
      * @param $object
@@ -1953,12 +1972,12 @@ class Bomber
         while (false != ($item = $op->read())) {
             if ($item == '.' || $item == '..')
                 continue;
-            if (is_dir($op->path . '/' . $item)) {
-                self::dirClear($op->path . '/' . $item);
-                rmdir($op->path . '/' . $item);
+            if (is_dir($op->path . DIRECTORY_SEPARATOR . $item)) {
+                self::dirClear($op->path . DIRECTORY_SEPARATOR . $item);
+                rmdir($op->path . DIRECTORY_SEPARATOR . $item);
             }
             else
-                unlink($op->path . '/' . $item);
+                unlink($op->path . DIRECTORY_SEPARATOR . $item);
         }
 
         return true;
@@ -2008,7 +2027,7 @@ class Bomber
             //  创建文件夹
             self::dirMake($dir);
             //  打开文件
-            $fopen = fopen($dir . $file, 'w');
+            $fopen = fopen($dir . DIRECTORY_SEPARATOR . $file, 'w');
         }
         else
             $fopen = fopen($file, 'w');
@@ -2029,7 +2048,7 @@ class Bomber
         //  关闭文件
         fclose($fopen);
 
-        return $dir . $file;
+        return $dir . DIRECTORY_SEPARATOR . $file;
     }
 
     /**
