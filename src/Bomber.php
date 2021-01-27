@@ -786,6 +786,48 @@ class Bomber
     }
 
     /**
+     * 邀请码生成和解码
+     *
+     * @param        $content //用户UID或者邀请码
+     * @param int    $type    //生成或解码
+     * @param string $key     //字符串编排串
+     * @param int    $offset  //UID偏移量
+     *
+     * @return float|int|string
+     *
+     * @author    ComingDemon
+     * @copyright 魔网天创信息科技
+     */
+    public function inviteCode($content, $type = 1, $key = '', $offset = 0)
+    {
+        //  字符编排内容
+        $key = $key ? : 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        //  生成
+        if ($type != 0) {
+            $code = '';
+            $content += $offset;
+            while ($content > 0) {
+                $mod = $content % strlen($key);
+                $content = ($content - $mod) / strlen($key);
+                $code = $key[$mod] . $code;
+            }
+
+            return $code;
+
+        }
+        //  解码
+        else {
+            $len = strlen($content);
+            $content = strrev($content);
+            $uid = 0;
+            for ($i = 0; $i < $len; $i++)
+                $uid += strpos($key, $content[$i]) * pow(strlen($key), $i);
+
+            return $uid - $offset;
+        }
+    }
+
+    /**
      * 字符串过长截取
      *
      * @param $str
@@ -948,6 +990,20 @@ class Bomber
      */
     public function strImage($str, $type = 'svg', $parm = [])
     {
+        //  动态背景色
+        $calc = $parm['calc'] ?? false;
+        //  背景颜色
+        $background = $parm['background'] ?? '#ffffff';
+        //  文字颜色
+        $color = $parm['color'] ?? '#000000';
+        if ($calc) {
+            $total = unpack('L', hash('adler32', $str, true))[1];
+            $conver = (new Color())->hsv($total % 360 / 360, 0.3, 0.9);
+            $background = '#' . $conver->hsv2hex()->hex;
+            $color = '#ffffff';
+        }
+        //  只取首字
+        $str = ($parm['substr'] ?? false) ? mb_strtoupper(mb_substr($str, 0, $parm['substr'])) : $str;
         //  字体文件
         $font = $parm['font'] ?? '';
         //  高度
@@ -965,17 +1021,6 @@ class Bomber
         //  微调位置
         $offsetX = $parm['offsetX'] ?? 0;
         $offsetY = $parm['offsetX'] ?? 0;
-        //  动态背景色
-        $calc = $parm['calc'] ?? false;
-        //  背景颜色
-        $background = $parm['background'] ?? '#ffffff';
-        if ($calc) {
-            $total = unpack('L', hash('adler32', $str, true))[1];
-            $conver = (new Color())->hsv($total % 360 / 360, 0.3, 0.9);
-            $background = '#' . $conver->hsv2hex()->hex;
-        }
-        //  文字颜色
-        $color = $parm['color'] ?? '#000000';
         //  图片格式
         $type = strtolower($type);
         switch ($type) {
@@ -984,7 +1029,7 @@ class Bomber
             case 'xml':
             case 'svg+xml':
                 $type = 'svg+xml';
-                $content = '<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="' . $width . '" height="' . $height . '"><rect fill="' . $background . '" x="0" y="0" width="' . $width . '" height="' . $height . '"></rect><text x="' . ($width / 2) . '" y="' . ($height / 2) . '" font-size="' . $size . '" text-copy="comingdemon" fill="' . $color . '" text-copy="demon" text-anchor="middle" alignment-baseline="central">' . $str . '</text></svg>';
+                $content = '<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="' . $width . '" height="' . $height . '"><rect fill="' . $background . '" x="0" y="0" width="' . $width . '" height="' . $height . '"></rect><text x="' . ($width / 2) . '" y="' . ($height / 2) . '" font-size="' . $size . '" text-copy="comingdemon" fill="' . $color . '" text-right="demon" text-anchor="middle" alignment-baseline="central">' . $str . '</text></svg>';
                 break;
             //  其他
             default:
@@ -994,10 +1039,12 @@ class Bomber
                 $img = imagecreate($width, $height);
                 //  设置背景色
                 imagecolorallocate($img, hexdec(substr($background, 1, 2)), hexdec(substr($background, 3, 2)), hexdec(substr($background, 5, 2)));
-                //  设置文字颜色
-                $textColor = imagecolorallocate($img, hexdec(substr($color, 1, 2)), hexdec(substr($color, 3, 2)), hexdec(substr($color, 5, 2)));
-                //  设置文字样式
-                imagettftext($img, $size, 0, ($height - $size) / (self::regexp(mb_substr($str, 0, 1), 'chs') ? 2.5 : 2.3) + $offsetX, ($height + $size) / 2 + $offsetY, $textColor, $font, $str);
+                if ($font && !is_file($font)) {
+                    //  设置文字颜色
+                    $textColor = imagecolorallocate($img, hexdec(substr($color, 1, 2)), hexdec(substr($color, 3, 2)), hexdec(substr($color, 5, 2)));
+                    //  设置文字样式
+                    imagettftext($img, $size, 0, ($height - $size) / (self::regexp(mb_substr($str, 0, 1), 'chs') ? 2.5 : 2.3) + $offsetX, ($height + $size) / 2 + $offsetY, $textColor, $font, $str);
+                }
                 //  打开缓冲区
                 ob_start();
                 //  支持类型
