@@ -4,34 +4,42 @@ use \Demon\Library\Bomber;
 
 //  修复神奇的精度问题
 ini_set('serialize_precision', -1);
+
 /**
  * 本次请求的秒时间戳
  */
 define('DEMON_TIME', (int)$_SERVER['REQUEST_TIME']);
+
 /**
  * 本次请求的毫秒时间戳
  */
 define('DEMON_MSTIME', (int)($_SERVER['REQUEST_TIME_FLOAT'] * 1000));
+
 /**
  * 本次请求的日期数值
  */
 define('DEMON_DATE', (int)date('Ymd', DEMON_TIME));
+
 /**
  * 本次请求的方法类型
  */
 define('DEMON_METHOD', bomber()->requestMethod());
+
 /**
  * 本次请求是否为AJAX请求
  */
 define('DEMON_INAJAX', !strcasecmp($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '', 'xmlhttprequest'));
+
 /**
  * 本次请求是否为SUBMIT提交
  */
 define('DEMON_SUBMIT', DEMON_METHOD == 'POST' && ($_REQUEST['method'] ?? '') != 'get');
+
 /**
  * 本次请求的唯一标识码
  */
 define('DEMON_SOLECODE', (rand(1111, 9999) . (str_pad(DEMON_TIME, 12, 0, STR_PAD_LEFT)) . rand(111, 999)));
+
 /**
  * 定义一些常用的状态码
  */
@@ -55,10 +63,16 @@ define('DEMON_CODE_COND', 412);
 define('DEMON_CODE_LARGE', 413);
 //  媒体错误
 define('DEMON_CODE_MEDIA', 415);
+//  请求失效
+define('DEMON_CODE_EXPIRED', 419);
+//  请求频繁
+define('DEMON_CODE_MANY', 429);
 //  未知错误
 define('DEMON_CODE_SERVER', 500);
 //  数据错误
 define('DEMON_CODE_DATA', 501);
+//  无效服务
+define('DEMON_CODE_SERVICE', 503);
 
 /**
  * 通用方法
