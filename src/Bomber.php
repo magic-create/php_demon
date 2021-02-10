@@ -828,6 +828,72 @@ class Bomber
     }
 
     /**
+     * 字符串替换一次
+     *
+     * @param        $needle
+     * @param        $replace
+     * @param        $haystack
+     * @param string $position
+     *
+     * @return string
+     *
+     * @author    ComingDemon
+     * @copyright 魔网天创信息科技
+     */
+    public function strReplaceOnce($needle, $replace, $haystack, $position = 'left')
+    {
+        //  根据位置来清理
+        $position = strtolower($position);
+        switch ($position) {
+            //  前缀
+            case 'pre':
+                $start = mb_strpos($haystack, $needle) === 0 ? 0 : false;
+                break;
+            //  后缀
+            case 'post':
+                $start = mb_substr($haystack, -mb_strlen($needle)) === $needle ? -mb_strlen($needle) : false;
+                break;
+            //  从右侧
+            case 'right':
+                $start = mb_strrpos($haystack, $needle);
+                break;
+            //  从左侧
+            case 'left':
+            default:
+                $start = mb_strpos($haystack, $needle);
+                break;
+        }
+        //  如果没有匹配的内容
+        if ($start === false)
+            return $haystack;
+
+        //  开始替换
+        $regex = '`' . preg_quote($needle, '`') . '`';
+        switch ($position) {
+            //  从右开始搜索替换
+            case 'post':
+            case 'right':
+                $total = mb_substr_count($haystack, $needle);
+                $count = 0;
+
+                return preg_replace_callback($regex, function($matches) use ($total, &$count, $needle, $replace) {
+                    $count++;
+                    if ($count == $total)
+                        return $replace;
+
+                    return $needle;
+                }, $haystack);
+                break;
+            //  从左开始搜索替换
+            case 'pre':
+            case 'left':
+            default:
+                return preg_replace($regex, $replace, $haystack, 1);
+                break;
+        }
+    }
+
+    /**
      * 字符串过长截取
      *
      * @param $str
@@ -1858,6 +1924,12 @@ class Bomber
      */
     public function input($name = '', $default = null, $filter = '')
     {
+        //  从Input中获取信息
+        if ($raw = file_get_contents('php://input')) {
+            //  如果是JSON则合并到$_REQUEST中
+            if (self::regexp($raw, 'json') && $raw = json_decode($raw, true))
+                $_REQUEST = array_merge($_REQUEST, $raw);
+        }
         $request = $_REQUEST;
         if (is_array($name))
             $request = array_merge($request, $name);

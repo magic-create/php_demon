@@ -33,7 +33,7 @@ define('DEMON_INAJAX', !strcasecmp($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '', 'xml
 /**
  * 本次请求是否为SUBMIT提交
  */
-define('DEMON_SUBMIT', DEMON_METHOD == 'POST' && ($_REQUEST['method'] ?? '') != 'get');
+define('DEMON_SUBMIT', DEMON_METHOD == 'POST' && strtoupper(arguer('method') ?? '') != 'GET');
 
 /**
  * 本次请求的唯一标识码
