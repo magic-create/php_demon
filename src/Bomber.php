@@ -391,7 +391,7 @@ class Bomber
             $newArray = [];
             foreach ($array as $val) {
                 if (is_object($array[0]))
-                    $newArray[$val->$index] = self::arrayToObject($val);
+                    $newArray[$val->{$index}] = self::arrayToObject($val);
                 else
                     $newArray[$val[$index]] = $val;
             }
@@ -1139,6 +1139,32 @@ class Bomber
 
         //  返回内容
         return "data:image/{$type};base64," . base64_encode($content);
+    }
+
+    /**
+     * 字符串切割为数组
+     *
+     * @param string $str
+     * @param int    $gap
+     * @param string $encoding
+     *
+     * @return mixed
+     * @author    ComingDemon
+     * @copyright 魔网天创信息科技
+     */
+    public function strSplit(string $str = '', int $gap = 1, $encoding = 'utf-8')
+    {
+        //  计算字符长度
+        $strlen = mb_strlen($str, $encoding);
+        //  循环截取
+        while ($strlen) {
+            $array[] = mb_substr($str, 0, $gap, $encoding);
+            $str = mb_substr($str, $gap, $strlen, $encoding);
+            $strlen = mb_strlen($str, $encoding);
+        }
+
+        //  返回数组
+        return $array;
     }
 
     /**
