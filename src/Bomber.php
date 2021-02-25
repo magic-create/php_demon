@@ -894,6 +894,30 @@ class Bomber
     }
 
     /**
+     * 字符串占位符替换
+     *
+     * @param          $str
+     * @param array    $replace
+     * @param string[] $placeholder
+     *
+     * @return string
+     * @author    ComingDemon
+     * @copyright 魔网天创信息科技
+     */
+    public function strReplacement($str, $replace = [], $placeholder = [':', ''])
+    {
+        if (!$replace || !is_array($replace))
+            return $str;
+        array_multisort($replace, SORT_ASC, array_map(function($value, $key) { return mb_strlen($key) * -1; }, $replace, array_keys($replace)));
+        $prefix = ($placeholder[0] ?? '');
+        $postfix = ($placeholder[1] ?? '');
+        foreach ($replace as $key => $value)
+            $str = str_replace([$prefix . $key . $postfix, $prefix . mb_strtoupper($key) . $postfix, $prefix . mb_strtoupper(mb_substr($key, 0, 1)) . mb_substr($key, 1) . $postfix], [$value, mb_strtoupper($value), mb_strtoupper(mb_substr($value, 0, 1)) . mb_substr($value, 1)], $str);
+
+        return $str;
+    }
+
+    /**
      * 字符串过长截取
      *
      * @param $str
@@ -1429,7 +1453,7 @@ class Bomber
                     $message = '';
                 }
                 else {
-                    $code = DEMON_CODE_COND;
+                    $code = DEMON_CODE_PARAM;
                     $message = $data;
                 }
             }
