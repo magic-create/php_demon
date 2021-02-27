@@ -168,7 +168,7 @@ class Bomber
                 if ($mod < 0 && in_array($key, $filter)) {
                     if ($dataType == 'array')
                         unset($object[$key]);
-                    if ($dataType == 'object')
+                    else if ($dataType == 'object')
                         unset($object->{$key});
                     continue;
                 }
@@ -176,7 +176,7 @@ class Bomber
                 else if ($mod > 0 && !in_array($key, $filter)) {
                     if ($dataType == 'array')
                         unset($object[$key]);
-                    if ($dataType == 'object')
+                    else if ($dataType == 'object')
                         unset($object->{$key});
                     continue;
                 }
@@ -311,18 +311,13 @@ class Bomber
                 $text = $doccment->createTextNode($val);
                 $itemx->appendChild($text);
             }
-            else
-                self::objectToXml($val, $doccment, $itemx);
+            else self::objectToXml($val, $doccment, $itemx);
         }
-
         //  生成结果
         $data = $doccment->saveXML();
-        //  如果非格式化，则去掉标签头
-        if (!$isFormat)
-            $data = str_replace(['<?xml version="1.0" encoding="UTF-8"?>', "\n"], '', $data);
 
-        //  返回结果
-        return $data;
+        //  如果非格式化，则去掉标签头再返回
+        return !$isFormat ? str_replace(['<?xml version="1.0" encoding="UTF-8"?>', "\n"], '', $data) : $data;
     }
 
     /**
@@ -431,18 +426,40 @@ class Bomber
     }
 
     /**
-     * 随机取出一个值
+     * 数组随机获取内容
      *
-     * @param array $array
+     * @param array  $array
+     * @param int    $count
+     * @param string $type value(返回值)|full(返回全部)|key(返回键)
      *
      * @return mixed|null
      * @author    ComingDemon
      * @copyright 魔网天创信息科技
      *
      */
-    public function arrayRand($array = [])
+    public function arrayRand($array = [], $count = 1, $type = 'value')
     {
-        return !$array ? null : $array[rand(0, count($array) - 1)];
+        if (!$array)
+            return null;
+        if (is_object($array))
+            $array = self::objectToArray($array);
+        $count = min(count($array), $count);
+        $rand = array_rand($array, $count);
+        if ($count == 1)
+            $rand = [$rand];
+        //  返回键
+        if ($type == 'key')
+            return $count == 1 ? $rand[0] : $rand;
+        $out = [];
+        foreach ($rand as $k)
+            $out[$k] = $array[$k];
+        //  返回全部
+        if ($type == 'full')
+            return $out;
+        $out = array_values($out);
+
+        //  返回值
+        return $count == 1 ? $out[0] : $out;
     }
 
     /**
@@ -507,12 +524,9 @@ class Bomber
                 }
             }
         }
-        //  是否重新排列数组键
-        if ($reset)
-            $array = array_merge($array);
 
-        //  返回处理后数组
-        return $array;
+        //  返回处理后数组（是否重新排列数组键）
+        return $reset ? array_merge($array) : $array;
     }
 
     /**
@@ -529,7 +543,7 @@ class Bomber
     public function rand($length = 6, $type = 'all')
     {
         $key = '';
-        if (!$length)
+        if ($length < 1)
             return '';
         // 中文
         if ($type == 'chinese') {
@@ -554,10 +568,12 @@ class Bomber
                 default:
                     $pattern = $type;
             }
+            $pattern = self::strSplit($pattern);
             for ($i = 0; $i < $length; $i++)
-                $key .= $pattern[mt_rand(0, strlen($pattern) - 1)];
+                $key .= $pattern[mt_rand(0, count($pattern) - 1)];
         }
 
+        //  返回字符串
         return (string)$key;
     }
 
@@ -578,9 +594,9 @@ class Bomber
         //  是否预先MD5处理
         $md5 = $parm['md5'] ?? false;
         //  如果已经是32位的MD5则截取
-        if ($md5 === 32 || mb_strlen($content) == 32)
+        if ($md5 === 32 || self::regexp($content, 'md5'))
             $content = strtolower(substr($content, 8, 16));
-        //  如果不是MD5则加密为16位MD5
+        //  如果不是MD5则加密为16位小写MD5
         else if (!$md5)
             $content = strtolower(self::md5($content));
 
@@ -664,7 +680,6 @@ class Bomber
         return round($value * $ratio) / $ratio;
     }
 
-
     /**
      * 获取随机小数
      *
@@ -705,7 +720,7 @@ class Bomber
      *
      * @param            $number //原数字
      * @param int        $digit  //节点位数
-     * @param string     $string //节点字符
+     * @param string     $unit   //节点字符
      * @param bool|false $force  //是否强制(不判断符合位数)
      *
      * @return string
@@ -713,15 +728,12 @@ class Bomber
      *
      * @author    ComingDemon
      */
-    public function numToChar($number, $digit = 4, $string = 'k', $force = false)
+    public function numToChar($number, $digit = 4, $unit = 'k', $force = false)
     {
         //  判断数字是否达到转换标准
         $minNumber = pow(10, $digit);
-        if ($number > $minNumber * 10 || $force) {
-            $newNumber = floor($number / $minNumber * 10) / 10;
-
-            return $newNumber . $string;
-        }
+        if ($number > $minNumber * 10 || $force)
+            return (floor($number / $minNumber * 10) / 10) . $unit;
         else return $number;
     }
 
@@ -790,7 +802,7 @@ class Bomber
      *
      * @param        $content //用户UID或者邀请码
      * @param int    $type    //生成或解码
-     * @param string $key     //字符串编排串
+     * @param string $seed    //字符串编排串种子
      * @param int    $offset  //UID偏移量
      *
      * @return float|int|string
@@ -798,18 +810,19 @@ class Bomber
      * @author    ComingDemon
      * @copyright 魔网天创信息科技
      */
-    public function inviteCode($content, $type = 1, $key = '', $offset = 0)
+    public function inviteCode($content, $type = 1, $seed = '', $offset = 0)
     {
         //  字符编排内容
-        $key = $key ? : 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $seed = $seed ? : 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
         //  生成
         if ($type != 0) {
+            $seed = self::strSplit($seed);
             $code = '';
             $content += $offset;
             while ($content > 0) {
-                $mod = $content % strlen($key);
-                $content = ($content - $mod) / strlen($key);
-                $code = $key[$mod] . $code;
+                $mod = $content % count($seed);
+                $content = ($content - $mod) / count($seed);
+                $code = $seed[$mod] . $code;
             }
 
             return $code;
@@ -817,11 +830,10 @@ class Bomber
         }
         //  解码
         else {
-            $len = strlen($content);
-            $content = strrev($content);
+            $content = self::strSplit(self::strRev($content));
             $uid = 0;
-            for ($i = 0; $i < $len; $i++)
-                $uid += strpos($key, $content[$i]) * pow(strlen($key), $i);
+            for ($i = 0; $i < count($content); $i++)
+                $uid += mb_strpos($seed, $content[$i]) * pow(mb_strlen($seed), $i);
 
             return $uid - $offset;
         }
@@ -1192,6 +1204,27 @@ class Bomber
     }
 
     /**
+     * 字符串翻转或打乱
+     *
+     * @param string $str
+     * @param bool   $shuffle
+     *
+     * @return string
+     * @author    ComingDemon
+     * @copyright 魔网天创信息科技
+     */
+    public function strRev(string $str = '', $shuffle = false)
+    {
+        $split = self::strSplit($str);
+        if ($shuffle)
+            shuffle($split);
+        else
+            krsort($split);
+
+        return join('', $split);
+    }
+
+    /**
      * 返回当前运行毫秒（非请求毫秒）
      * @return float
      * @copyright 魔网天创信息科技
@@ -1221,7 +1254,7 @@ class Bomber
         $info = explode('.', (int)$mstime / 1000);
         //  将所有反斜杠的f变成其他字符串临时保存
         if (strpos($format, '\f') !== false) {
-            $format = str_replace('\\f', '(.ω.)', $format);
+            $format = str_replace('\\f', '{@f}', $format);
             $cute = true;
         }
         //  将秒部分进行正常格式化
@@ -1232,7 +1265,7 @@ class Bomber
             $date = str_replace('f', self::strFill(3, $info[1], 'right'), $date);
         //  将临时字符串还原为f
         if ($cute ?? false)
-            $date = str_replace('(.ω.)', 'f', $date);
+            $date = str_replace('{@f}', 'f', $date);
 
         //  返回秒部分格式化结果
         return $date;
@@ -1369,43 +1402,42 @@ class Bomber
     /**
      * 令牌生成（可以用做邀请码或其他内容，如果需要解码则需要相同的种子和补位规则）
      *
-     * @param        $number
-     * @param int    $type
-     * @param string $seed
-     * @param string $seam
-     * @param int    $length
+     * @param        $content
+     * @param int    $type   类型
+     * @param string $seed   种子
+     * @param string $seam   补位字符
+     * @param int    $length 总长度
      *
      * @return float|int|string
      * @author    ComingDemon
      * @copyright 魔网天创信息科技
      */
-    public function token($number, $type = 1, $seed = '123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', $seam = '0', $length = 6)
+    public function token($content, $type = 1, $seed = '123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', $seam = '0', $length = 6)
     {
         //  计算种子长度来锚定进制精度
         $scale = mb_strlen($seed);
         //  解码
         if ($type != 1) {
-            if (strrpos($number, $seam) !== false)
-                $code = substr($number, strrpos($number, $seam) + 1);
-            $len = strlen($number);
-            $number = strrev($number);
+            if (mb_strrpos($content, $seam) !== false)
+                $code = mb_substr($content, mb_strrpos($content, $seam) + 1);
+            $content = self::strSplit(self::strRev($content));
             $num = 0;
-            for ($i = 0; $i < $len; $i++)
-                $num += strpos($seed, $number[$i]) * pow($scale, $i);
+            for ($i = 0; $i < count($content); $i++)
+                $num += mb_strpos($seed, $content[$i]) * pow($scale, $i);
 
             return $num;
         }
         //  加码
         else {
             $code = '';
-            while ($number > 0) {
-                $mod = $number % $scale;
-                $number = ($number - $mod) / $scale;
+            $seed = self::strSplit($seed);
+            while ($content > 0) {
+                $mod = $content % $scale;
+                $content = ($content - $mod) / $scale;
                 $code = $seed[$mod] . $code;
             }
-            $code = str_pad($code, $length, $seam, STR_PAD_LEFT);
 
-            return $code;
+            return self::strFill($length, $code, STR_PAD_LEFT, $seam);
         }
     }
 
@@ -1502,8 +1534,7 @@ class Bomber
             return true;
         else if (isset($_SERVER['HTTP_USER_AGENT']) && preg_match('/(blackberry|configuration\/cldc|hp |hp-|htc |htc_|htc-|iemobile|kindle|midp|mmp|motorola|mobile|nokia|opera mini|opera |Googlebot-Mobile|YahooSeeker\/M1A1-R2D2|android|iphone|ipod|mobi|palm|palmos|pocket|portalmmm|ppc;|smartphone|sonyericsson|sqh|spv|symbian|treo|up.browser|up.link|vodafone|windows ce|xda |xda_)/i', $_SERVER['HTTP_USER_AGENT']))
             return true;
-        else
-            return false;
+        else return false;
     }
 
     /**
@@ -1668,7 +1699,7 @@ class Bomber
             //  邮箱
             'email' => '/^[\w-]+(\.[\w-]+)*@[\w-]+(\.[\w-]+)+$/',
             //  手机
-            'mobile' => '/^[1](([3][0-9])|([4][5-9])|([5][0-3,5-9])|([6][5,6])|([7][0-8])|([8][0-9])|([9][1,8,9]))[0-9]{8}$/',
+            'mobile' => '/^1([34578][0-9]|6[2567]|9[1589])[0-9]{8}$/',
             //  链接
             'url' => '/^http(s)?:\\/\\/.+/',
             //  QQ
@@ -1691,9 +1722,7 @@ class Bomber
             'base64' => '/^(data:(.*?)base64,)/'
         ];
         //  错误回调
-        $result = function($result) use ($content, $func) {
-            return !$result ? ($func ? $func($content) : false) : $result;
-        };
+        $result = function($result) use ($content, $func) { return !$result ? ($func ? $func($content) : false) : $result; };
         if ($rule == 'json') {
             if (!is_string($content))
                 return $result(false);
@@ -1705,8 +1734,7 @@ class Bomber
         }
         else if (isset($rules[$rule]))
             return $result(preg_match($rules[$rule], $content));
-        else
-            return $result(preg_match($rule, $content));
+        else return $result(preg_match($rule, $content));
     }
 
     /**
@@ -1777,8 +1805,7 @@ class Bomber
             $url = $_SERVER['REQUEST_URI'];
         else if (isset($_SERVER['ORIG_PATH_INFO']))
             $url = $_SERVER['ORIG_PATH_INFO'] . (!empty($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '');
-        else
-            $url = '';
+        else $url = '';
 
         return $type ? self::requestDomain($type == 2) . $url : $url;
     }
@@ -1817,7 +1844,7 @@ class Bomber
         //  设置Curl总执行动作的最长秒数，如果设置为0，则无限
         curl_setopt($curl, CURLOPT_TIMEOUT, 1200);
         // 请求类型
-        switch ($config['method']) {
+        switch (strtolower($config['method'])) {
             // 获取外链文件
             case 'file':
                 // HTTPS特殊处理
@@ -1851,9 +1878,8 @@ class Bomber
                     if ($parm) {
                         $url .= stripos($url, '?') === false ? '?' : '&';
                         if (!is_string($parm)) {
-                            foreach ($parm as &$val) {
+                            foreach ($parm as &$val)
                                 $val = urlencode($val);
-                            }
                             $parm = http_build_query($parm);
                         }
                         $url .= $parm;
@@ -2035,8 +2061,8 @@ class Bomber
     public function typeCast($data, $type)
     {
         //  如果是对象函数则直接在体系内自定义
-        if (gettype($type) == 'object')
-            return $type($data);
+        if (self::isFunction($type, false))
+            return call_user_func($type, $data);
         //  如果不是字符串则直接返回
         if (!is_string($type))
             return $data;
@@ -2145,8 +2171,7 @@ class Bomber
                 self::dirClear($op->path . DIRECTORY_SEPARATOR . $item);
                 rmdir($op->path . DIRECTORY_SEPARATOR . $item);
             }
-            else
-                unlink($op->path . DIRECTORY_SEPARATOR . $item);
+            else unlink($op->path . DIRECTORY_SEPARATOR . $item);
         }
 
         return true;
@@ -2198,8 +2223,7 @@ class Bomber
             //  打开文件
             $fopen = fopen($dir . DIRECTORY_SEPARATOR . $file, 'w');
         }
-        else
-            $fopen = fopen($file, 'w');
+        else $fopen = fopen($file, 'w');
 
         //  内容类型
         switch ($type) {
@@ -2279,7 +2303,7 @@ class Bomber
             //  判断文件是否存在
             $file_info = strtoupper('http_' . $file_info);
             if (!isset($_SERVER[$file_info]))
-                return 404;
+                return DEMON_CODE_NONE;
             //  取截图和文件的基本信息
             $fileData = file_get_contents('php://input');
             $fileFormat = self::suffix($_SERVER['CONTENT_TYPE'], '/');
@@ -2288,7 +2312,7 @@ class Bomber
         else {
             //  判断文件是否存在
             if (!isset($file_info))
-                return 404;
+                return DEMON_CODE_NONE;
             //  取截图和文件的基本信息
             $fileName = $file_info['name'];
             $fileFormat = self::suffix($fileName);
@@ -2296,24 +2320,24 @@ class Bomber
         }
         //  判断文件格式（返回1则表示格式不正确）
         if ($file_format && !in_array($fileFormat, $file_format))
-            return 415;
+            return DEMON_CODE_MEDIA;
         //  判断文件尺寸（返回406则表示尺寸过小，返回413则表示尺寸过大）
         if ($file_size) {
             if ($file_size[0] && $fileSize < $file_size[0])
-                return 406;
+                return DEMON_CODE_FAIL;
             if ($file_size[1] && $fileSize > $file_size[1])
-                return 413;
+                return DEMON_CODE_LARGE;
         }
         //  判断文件存放目录（返回4则表示无法创建目录）
         if (!is_dir($src_dir)) {
             $status = self::dirMake($src_dir);
             if (!$status)
-                return 500;
+                return DEMON_CODE_SERVER;
         }
         //  移动端特殊处理和普通处理
         $status = $isMobile ? file_put_contents($src_dir . '/' . $src_file, $fileData) : move_uploaded_file($file_info['tmp_name'], $src_dir . '/' . $src_file);
         if (!$status)
-            return 500;
+            return DEMON_CODE_SERVER;
 
         //  返回最终文件地址
         return ['file' => $src_dir . '/' . $src_file];
@@ -2343,7 +2367,7 @@ class Bomber
      */
     private function _imageType()
     {
-        return [1 => 'gif', 2 => 'jpg', 3 => 'png', 4 => 'swf', 5 => 'psd', 6 => 'bmp', 7 => 'tiff', 8 => 'tiff', 9 => 'jpc', 10 => 'jp2', 11 => 'jpx', 12 => 'jb2', 13 => 'swc', 14 => 'iff', 15 => 'wbmp', 16 => 'xbm'];
+        return [1 => 'gif', 2 => 'jpg', 3 => 'png', 4 => 'swf', 5 => 'psd', 6 => 'bmp', 7 => 'tiff', 8 => 'tiff', 9 => 'jpc', 10 => 'jp2', 11 => 'jpx', 12 => 'jb2', 13 => 'swc', 14 => 'iff', 15 => 'wbmp', 16 => 'xbm', 17 => 'webp', 18 => 'jpeg'];
     }
 
     /**
@@ -2381,7 +2405,7 @@ class Bomber
                         self::imagebmp($object, $src_img);
                         break;
                     default:
-                        return 415;
+                        return DEMON_CODE_MEDIA;
                 }
 
                 return $object;
@@ -2482,7 +2506,7 @@ class Bomber
     public function imageThumb($src_img, $parm = [])
     {
         if (!is_file($src_img))
-            return 404;
+            return DEMON_CODE_NONE;
         //  缩略参数
         $width = $parm['width'] ?? 100;
         $height = $parm['height'] ?? 100;
@@ -2566,8 +2590,7 @@ class Bomber
                 $dst_height = $src_height;
                 if ($src_width * $height > $src_height * $width)
                     $dst_width = intval($src_height * $width / $height);
-                else
-                    $dst_height = intval($src_width * $height / $width);
+                else $dst_height = intval($src_width * $height / $width);
                 switch ($mode) {
                     case 1:
                         $x = 0;
@@ -2615,8 +2638,7 @@ class Bomber
                     imagecopyresampled($canvas, $imageInfo['object'], 0, 0, $x, $y, $width, $height, $dst_width, $dst_height);
                     imagesavealpha($canvas, true);
                 }
-                else
-                    imagecopyresampled($canvas, $imageInfo['object'], 0, 0, $x, $y, $width, $height, $dst_width, $dst_height);
+                else imagecopyresampled($canvas, $imageInfo['object'], 0, 0, $x, $y, $width, $height, $dst_width, $dst_height);
                 $image = $canvas;
                 break;
         }
@@ -2631,12 +2653,7 @@ class Bomber
             $foo = self::imageObject('write', $src_img, ['object' => $image, 'quality' => 75, 'type' => $imageType]);
             if (is_numeric($foo))
                 return $foo;
-
         }
-
-        //  浏览器预览
-        //  header("Content-Type:image/" . $imageType);
-        //  echo file_get_contents($src_img);
 
         //  返回缩略图地址
         return ['img' => $src_img];
@@ -2692,12 +2709,14 @@ class Bomber
                     $isWaterImage = false;
                     break;
                 case 'jpg':
+                case 'jpeg':
                 case 'png':
                 case 'bmp':
+                case 'webp':
                     $waterObj = $waterInfo['object'];
                     break;
                 default:
-                    return 415;
+                    return DEMON_CODE_MEDIA;
             }
         }
 
@@ -2705,7 +2724,7 @@ class Bomber
         if (!empty($groundImage) && file_exists($groundImage)) {
             $info = getimagesize($groundImage);
             $imageType = self::_imageType();
-            $imgType = $imageType[$info[2]];
+            $imgType = $imageType[$info[2]] ?? null;
             $groundW = $info[0];    //取得背景图片的宽
             $groundH = $info[1];    //取得背景图片的高
             //  取得背景图片的格式
@@ -2727,9 +2746,11 @@ class Bomber
                     else $groundObj = $fooObj;
                     break;
                 case 'jpg':
+                case 'jpeg':
                     $groundObj = imagecreatefromjpeg($groundImage);
                     break;
                 case 'png':
+                case 'webp':
                     $fooInfo = self::imageObject('read', $groundImage);
                     $fooObj = $fooInfo['object'];
                     $groundObj = imagecreatetruecolor($groundW, $groundH);
@@ -2747,10 +2768,10 @@ class Bomber
                     $groundObj = self::imagecreatefrombmp($groundImage);
                     break;
                 default:
-                    return 415;
+                    return DEMON_CODE_MEDIA;
             }
         }
-        else return 415;
+        else return DEMON_CODE_MEDIA;
 
         //  图片水印
         if ($isWaterImage) {
@@ -2850,7 +2871,7 @@ class Bomber
                         imagecopy($groundObj, $waterObj, $posX, $posY, 0, 0, $waterW, $waterH);
                         break;
                     default:
-                        return 415;
+                        return DEMON_CODE_MEDIA;
                 }
             }
         }
@@ -2867,10 +2888,6 @@ class Bomber
             if ($jpgName != $groundImage)
                 unlink($groundImage);
         }
-
-        //  浏览器预览
-        //  header("Content-Type:image/" . ($jpgForce ? 'jpeg' : $imgType));
-        //  echo file_get_contents($jpgName);
 
         //  返回水印图片地址
         return self::arrayToObject(['img' => $jpgName, 'type' => $jpgForce ? 'jpeg' : $imgType]);
