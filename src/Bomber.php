@@ -530,6 +530,39 @@ class Bomber
     }
 
     /**
+     * 对比先后差异
+     *
+     * @param          $data
+     * @param          $info
+     * @param string[] $alias
+     *
+     * @return array|mixed
+     * @author    ComingDemon
+     * @copyright 魔网天创信息科技
+     */
+    public function arrayDiffer($data, $info, $alias = ['before' => 'before', 'after' => 'after'])
+    {
+        //  容器别名
+        $before = ($alias['before'] ?? '') ? : 'before';
+        $after = ($alias['after'] ?? '') ? : 'after';
+        //  数据类型
+        $type = 'array';
+        if (!is_array($data)) {
+            $type = 'object';
+            $data = self::objectToArray($data);
+        }
+        $info = $info ? (is_array($info) ? $info : self::objectToArray($info)) : [];
+        $list = [];
+        //  匹配先后差异
+        foreach ($data as $key => $val)
+            if (!isset($info[$key]) || $info[$key] != $val)
+                $list[$key] = [$before => $info[$key] ?? null, $after => $val];
+
+        //  返回差异结果
+        return $type == 'array' ? $list : self::arrayToObject($list);
+    }
+
+    /**
      * 创建一个随机字符串
      *
      * @param int    $length //随机长度
