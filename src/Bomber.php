@@ -353,7 +353,7 @@ class Bomber
             return false;
 
         foreach ((array)$arrry as $val) {
-            if (stripos($string, $val) !== false) {
+            if (mb_stripos($string, $val) !== false) {
                 $return = $returnvalue ? $val : true;
 
                 return $return;
@@ -423,6 +423,29 @@ class Bomber
             foreach ($array as $val)
                 self::_arrayLevel($val, $arraylevel, $level);
         }
+    }
+
+    /**
+     * 判断数组是否顺序
+     *
+     * @param      $array
+     * @param bool $strict
+     *
+     * @return bool
+     * @author    ComingDemon
+     * @copyright 魔网天创信息科技
+     */
+    public function arrayOrderly($array, $strict = false)
+    {
+        $index = $max = $strict ? 0 : min(array_keys($array));
+        foreach ($array as $key => $val) {
+            if ($strict ? $key != $index : $key < $max || !is_numeric($key))
+                return false;
+            $index += 1;
+            $max = max($index, $key);
+        }
+
+        return true;
     }
 
     /**
@@ -953,7 +976,8 @@ class Bomber
     {
         if (!$replace || !is_array($replace))
             return $str;
-        array_multisort($replace, SORT_ASC, array_map(function($value, $key) { return mb_strlen($key) * -1; }, $replace, array_keys($replace)));
+        if (!self::arrayOrderly($replace))
+            array_multisort($replace, SORT_ASC, array_map(function($value, $key) { return mb_strlen($key) * -1; }, $replace, array_keys($replace)));
         $prefix = ($placeholder[0] ?? '');
         $postfix = ($placeholder[1] ?? '');
         foreach ($replace as $key => $value)
@@ -1687,6 +1711,61 @@ class Bomber
     }
 
     /**
+     * 通过表达式获取IP区间
+     *
+     * @param string $expression
+     * @param bool   $int
+     *
+     * @return array
+     * @author    ComingDemon
+     * @copyright 魔网天创信息科技
+     */
+    public function ipRange($expression, $int = false)
+    {
+        //  默认赋值
+        $range = [$expression, $expression];
+        //  是CIDR模式
+        if (strstr($expression, '/')) {
+            $cidr = explode('/', $expression);
+            $range[0] = long2ip((ip2long($cidr[0])) & ((-1 << (32 - (int)$cidr[1]))));
+            $range[1] = long2ip((ip2long($range[0])) + pow(2, (32 - (int)$cidr[1])) - 1);
+        }
+        //  循环处理补位和通配
+        else {
+            foreach ($range as $key => $val) {
+                $val = self::strReplacement('#0.#1.#2.#3', explode('.', $val) + array_fill(0, 4, '*'), ['#', '']);
+                $range[$key] = str_replace('*', $key ? '255' : '0', $val);
+            }
+        }
+
+        //  返回范围
+        return !$int ? $range : [ip2long($range[0]), ip2long($range[1])];
+    }
+
+    /**
+     * 检查IP区间
+     *
+     * @param string[]|string $expression
+     * @param null            $ip
+     *
+     * @return bool
+     * @author    ComingDemon
+     * @copyright 魔网天创信息科技
+     */
+    public function ipCheck($expression, $ip = null)
+    {
+        $ip = $ip ? : self::ip();
+        $expression = !is_array($expression) ? [$expression] : $expression;
+        foreach ($expression as $exp) {
+            [$min, $max] = self::ipRange($exp, true);
+            if (ip2long($ip) < $min || ip2long($ip) > $max)
+                return false;
+        }
+
+        return true;
+    }
+
+    /**
      * 获取MD5
      *
      * @param      $content
@@ -1736,7 +1815,7 @@ class Bomber
             //  链接
             'url' => '/^http(s)?:\\/\\/.+/',
             //  QQ
-            'qq' => '/^[1-9]*[1-9][0-9]*$/',
+            'qq' => '/^[1-9][0-9]{4,11}$/',
             //  空
             'null' => '/\s/g',
             //  IP
