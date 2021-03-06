@@ -2256,7 +2256,7 @@ class Bomber
         if (!is_dir($dir)) {
             if (!self::dirMake(dirname($dir)))
                 return false;
-            if (!mkdir($dir, 0777))
+            if (!mkdir($dir))
                 return false;
         }
 
@@ -2264,29 +2264,61 @@ class Bomber
     }
 
     /**
+     * 复制目录
+     *
+     * @param $source
+     * @param $target
+     *
+     * @return bool
+     * @author    ComingDemon
+     * @copyright 魔网天创信息科技
+     */
+    public function dirCopy($source, $target)
+    {
+        if (!file_exists($source))
+            return false;
+        if (!file_exists($target))
+            mkdir($target);
+        $dir = opendir($source);
+        while ($fileName = readdir($dir)) {
+            if ($fileName == '.' || $fileName == '..')
+                continue;
+            $sourceFilePath = $source . DIRECTORY_SEPARATOR . $fileName;
+            $targetFilePath = $target . DIRECTORY_SEPARATOR . $fileName;
+            if (is_file($sourceFilePath))
+                copy($sourceFilePath, $targetFilePath);
+            else self::dirCopy($sourceFilePath, $targetFilePath);
+        }
+        closedir($dir);
+
+        return true;
+    }
+
+    /**
      * 清空目录
      *
-     * @param $dir
+     * @param      $dir
+     * @param bool $remove
      *
      * @return bool
      * @author    ComingDemon
      * @copyright 魔网天创信息科技
      *
      */
-    public function dirClear($dir)
+    public function dirClear($dir, $remove = false)
     {
-        $op = dir($dir);
-        while (false != ($item = $op->read())) {
+        $op = opendir($dir);
+        while ($item = readdir($op)) {
             if ($item == '.' || $item == '..')
                 continue;
-            if (is_dir($op->path . DIRECTORY_SEPARATOR . $item)) {
-                self::dirClear($op->path . DIRECTORY_SEPARATOR . $item);
-                rmdir($op->path . DIRECTORY_SEPARATOR . $item);
-            }
-            else unlink($op->path . DIRECTORY_SEPARATOR . $item);
+            $path = $dir . DIRECTORY_SEPARATOR . $item;
+            if (is_dir($path))
+                self::dirClear($path, true);
+            else unlink($path);
         }
+        closedir($op);
 
-        return true;
+        return $remove ? rmdir($dir) : true;
     }
 
     /**
@@ -2359,33 +2391,45 @@ class Bomber
     /**
      * 从服务器下载文件
      *
-     * @param $file //文件名称
-     * @param $name //下载名称（如果设置名称，则直接返回二进制内容）
+     * @param $file  //文件名称
+     * @param $name  //下载名称（如果设置名称，则直接返回二进制内容）
+     * @param $speed //下载限速
      *
      * @return mixed
      * @copyright 魔网天创信息科技
      *
      * @author    ComingDemon
      */
-    public function fileDownload($file, $name = false)
+    public function fileDownload($file, $name = false, $speed = 0)
     {
-        $file_type = strtolower(strstr($file, '.'));
-        $file_dir = fopen($file, "r");
-        $file_size = filesize($file) + 1024;
+        $fileType = strtolower(strstr($file, '.'));
+        $fileDir = fopen($file, "r");
+        $fileSize = filesize($file) + 1024;
         if ($name) {
             header("Content-type: application/octet-stream");
             header("Accept-Ranges: bytes");
-            header("Accept-Length: " . $file_size);
-            header("Content-Disposition: attachment; filename=" . $name . $file_type);
-
-            echo fread($file_dir, filesize($file));
-            fclose($file_dir);
-
-            return exit;
+            header("Accept-Length: " . $fileSize);
+            header("Content-Disposition: attachment; filename=" . $name . $fileType);
+            if ($speed) {
+                ob_end_clean();
+                ob_implicit_flush();
+                header("X-Accel-Buffering: no");
+                $count = 0;
+                while ($fileSize - $count > 0) {
+                    echo fread($fileDir, $speed);
+                    $count += $speed;
+                    flush();
+                    sleep(1);
+                }
+            }
+            else {
+                echo fread($fileDir, filesize($file));
+                fclose($fileDir);
+            }
         }
         else {
-            $content = fread($file_dir, filesize($file));
-            fclose($file_dir);
+            $content = fread($fileDir, filesize($file));
+            fclose($fileDir);
 
             return $content;
         }
@@ -2638,8 +2682,7 @@ class Bomber
                     imagecopyresampled($canvas, $imageInfo['object'], 0, 0, 0, 0, $width, $height, $imageInfo['width'], $imageInfo['height']);
                     imagesavealpha($canvas, true);
                 }
-                else
-                    imagecopyresampled($canvas, $imageInfo['object'], 0, 0, 0, 0, $width, $height, $imageInfo['width'], $imageInfo['height']);
+                else imagecopyresampled($canvas, $imageInfo['object'], 0, 0, 0, 0, $width, $height, $imageInfo['width'], $imageInfo['height']);
                 $image = $canvas;
                 break;
             //  按照比例在大小内进行缩放，最小边为设置的边，另一边等比例变化
@@ -2650,16 +2693,14 @@ class Bomber
                 $dst_height = $height;
                 if ($src_width * $height > $src_height * $width)
                     $dst_height = intval($width * $src_height / $src_width);
-                else
-                    $dst_width = intval($height * $src_width / $src_height);
+                else $dst_width = intval($height * $src_width / $src_height);
                 $canvas = imagecreatetruecolor($dst_width, $dst_height);
                 if (in_array($imageType, ['gif', 'png'])) {
                     imagefill($canvas, 0, 0, imagecolorallocatealpha($canvas, 0, 0, 0, 127));
                     imagecopyresampled($canvas, $imageInfo['object'], 0, 0, 0, 0, $dst_width, $dst_height, $src_width, $src_height);
                     imagesavealpha($canvas, true);
                 }
-                else
-                    imagecopyresampled($canvas, $imageInfo['object'], 0, 0, 0, 0, $dst_width, $dst_height, $src_width, $src_height);
+                else imagecopyresampled($canvas, $imageInfo['object'], 0, 0, 0, 0, $dst_width, $dst_height, $src_width, $src_height);
                 $image = $canvas;
                 break;
             //  按照比例在大小内缩放，并且填充底色
