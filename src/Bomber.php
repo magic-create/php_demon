@@ -577,9 +577,14 @@ class Bomber
         $info = $info ? (is_array($info) ? $info : self::objectToArray($info)) : [];
         $list = [];
         //  匹配先后差异
-        foreach ($data as $key => $val)
-            if (!isset($info[$key]) || $info[$key] != $val)
-                $list[$key] = [$before => $info[$key] ?? null, $after => $val];
+        foreach ($data as $key => $val) {
+            try {
+                if (!isset($info[$key]) || $info[$key] != $val)
+                    $list[$key] = [$before => $info[$key] ?? null, $after => $val];
+            } catch (\Exception $exception) {
+                //  不处理异常
+            }
+        }
 
         //  返回差异结果
         return $type == 'array' ? $list : self::arrayToObject($list);
