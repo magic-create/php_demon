@@ -2283,7 +2283,7 @@ class Bomber
         if (!file_exists($source))
             return false;
         if (!file_exists($target))
-            mkdir($target);
+            self::dirMake($target);
         $dir = opendir($source);
         while ($fileName = readdir($dir)) {
             if ($fileName == '.' || $fileName == '..')
