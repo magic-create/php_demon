@@ -579,8 +579,11 @@ class Bomber
         //  匹配先后差异
         foreach ($data as $key => $val) {
             try {
-                if (!isset($info[$key]) || $info[$key] != $val)
-                    $list[$key] = [$before => $info[$key] ?? null, $after => $val];
+                if (!isset($info[$key]) || $info[$key] != $val) {
+                    $foo = $info[$key] ?? null;
+                    if ($foo != $val)
+                        $list[$key] = [$before => $foo, $after => $val];
+                }
             } catch (\Exception $exception) {
                 //  不处理异常
             }
