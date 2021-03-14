@@ -2230,7 +2230,7 @@ class Bomber
                 break;
             //  防止xss
             case 'xss':
-                $data = (string)str_replace('_x000D_', '', (new AntiXSS())->xss_clean($data));
+                $data = (string)str_replace('_x000D_', '', (new AntiXSS())->removeEvilAttributes(['style'])->xss_clean($data));
                 break;
             // 将HTML标签实体化
             case 'entity':
@@ -2247,6 +2247,18 @@ class Bomber
         }
 
         return $data;
+    }
+
+    /**
+     * xss
+     *
+     * @return AntiXSS
+     * @author    ComingDemon
+     * @copyright 魔网天创信息科技
+     */
+    public function xss()
+    {
+        return new AntiXSS();
     }
 
     /**
