@@ -1839,7 +1839,9 @@ class Bomber
             //  32位MD5
             'md5' => '/^([a-fA-F0-9]{32})$/',
             //  BASE64编码
-            'base64' => '/^(data:(.*?)base64,)/'
+            'base64' => '/^(data:(.*?)base64,)/',
+            //  16进制编码
+            'hex' => '/^[a-fA-F0-9xX][a-fA-F0-9xX][a-fA-F0-9]+$/',
         ];
         //  错误回调
         $result = function($result) use ($content, $func) { return !$result ? ($func ? $func($content) : false) : $result; };
