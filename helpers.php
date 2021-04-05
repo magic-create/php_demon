@@ -215,11 +215,8 @@ if (!function_exists('msdate')) {
 function error_build($code = DEMON_CODE_FAIL, $message = ''):string
 {
     //  兼容两个参数对调位置仍然成立
-    if (is_numeric($message) && $message > 0) {
-        $cache = $code;
-        $code = $message;
-        $message = $cache;
-    }
+    if (is_numeric($message) && $message > 0)
+        [$code, $message] = [$message, $code];
 
     return bomber()->errorBuild($code, $message);
 }

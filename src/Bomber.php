@@ -1604,19 +1604,20 @@ class Bomber
 
     /**
      * 检查浏览器版本信息
+     *
+     * @param null $agent
+     *
      * @return string
-     * @copyright 魔网天创信息科技
      * @author    ComingDemon
+     * @copyright 魔网天创信息科技
      */
-    public function browser()
+    public function browser($agent = null)
     {
         //  获取浏览器信息
-        if (empty($_SERVER['HTTP_USER_AGENT']))
+        if (!$agent && empty($_SERVER['HTTP_USER_AGENT']))
             return 'unknown';
-
-        $agent = $_SERVER['HTTP_USER_AGENT'];
-        $mobileAgent = defined('Client') ? 'client' : strtolower($_SERVER['HTTP_USER_AGENT']);
-
+        $agent = $agent ? : $_SERVER['HTTP_USER_AGENT'];
+        $mobileAgent = strtolower($agent);
         //  各类浏览器等内容的标识
         static $IPhoneList = ['iphone'];
         static $IPadList = ['ipad'];
@@ -1641,15 +1642,8 @@ class Bomber
             'haier', '^lct', '320x320', '240x320', '176x220'
         ];
         static $weixinList = ['micromessenger'];
-        static $clientList = ['demon client'];
-        static $demonList = ['demon app'];
-
         if (self::arrayStrpos($mobileAgent, $weixinList))
             return 'wechat';
-        else if (self::arrayStrpos($mobileAgent, $clientList))
-            return 'client';
-        else if (self::arrayStrpos($mobileAgent, $demonList))
-            return 'app';
         if (self::arrayStrpos($mobileAgent, $IPhoneList))
             return 'iphone';
         else if (self::arrayStrpos($mobileAgent, $IPadList))
@@ -1673,8 +1667,7 @@ class Bomber
                 return 'opera';
             else if ((stripos($agent, 'Chrome') == false) && stripos($agent, 'Safari') !== false)
                 return 'safari';
-            else
-                return 'other';
+            else return 'other';
         }
     }
 
