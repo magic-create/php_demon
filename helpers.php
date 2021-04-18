@@ -73,6 +73,8 @@ define('DEMON_CODE_SERVER', 500);
 define('DEMON_CODE_DATA', 501);
 //  无效服务
 define('DEMON_CODE_SERVICE', 503);
+//  版本错误
+define('DEMON_CODE_VERSION', 505);
 
 /**
  * 通用方法

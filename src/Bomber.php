@@ -336,7 +336,7 @@ class Bomber
     }
 
     /**
-     * 检查字符串是否出现在数组中
+     * 检查字符串是否包含数组中某个值
      *
      * @param            $string
      * @param            $arrry
@@ -1747,23 +1747,30 @@ class Bomber
      * 检查IP区间
      *
      * @param string[]|string $expression
+     * @param string          $type
      * @param null            $ip
      *
      * @return bool
      * @author    ComingDemon
      * @copyright 魔网天创信息科技
      */
-    public function ipCheck($expression, $ip = null)
+    public function ipCheck($expression, $type = 'assert', $ip = null)
     {
         $ip = $ip ? : self::ip();
         $expression = !is_array($expression) ? [$expression] : $expression;
         foreach ($expression as $exp) {
             [$min, $max] = self::ipRange($exp, true);
-            if (ip2long($ip) < $min || ip2long($ip) > $max)
-                return false;
+            if ((ip2long($ip) < $min || ip2long($ip) > $max)) {
+                if ($type == 'assert')
+                    return false;
+            }
+            else {
+                if ($type == 'match')
+                    return true;
+            }
         }
 
-        return true;
+        return $type == 'assert';
     }
 
     /**
