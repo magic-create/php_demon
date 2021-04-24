@@ -594,6 +594,29 @@ class Bomber
     }
 
     /**
+     * 查找元素在数组中的位置
+     *
+     * @param      $needle
+     * @param      $haystack
+     * @param bool $alias
+     *
+     * @return bool|false|int|string
+     * @author    ComingDemon
+     * @copyright 魔网天创信息科技
+     */
+    public function arraySearch($needle, $haystack, $alias = false)
+    {
+        if ($alias) {
+            foreach (self::objectToArray($haystack) as $index => $data)
+                if ($data[$alias] == $needle)
+                    return $index;
+
+            return false;
+        }
+        else return array_search($needle, $haystack);
+    }
+
+    /**
      * 创建一个随机字符串
      *
      * @param int    $length //随机长度
@@ -2355,7 +2378,7 @@ class Bomber
      */
     public function dirList($dir)
     {
-        $handle = opendir($dir . '.');
+        $handle = opendir($dir);
         //定义用于存储文件名的数组
         $array_file = [];
         while (false !== ($file = readdir($handle))) {
