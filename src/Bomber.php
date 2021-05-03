@@ -1972,7 +1972,7 @@ class Bomber
     public function curl($url, $parm = [], $config = [], $func = null)
     {
         //  请求类型
-        $config['method'] = $config['method'] ?? 'get';
+        $config['method'] = strtolower($config['method'] ?? 'get');
         //  定义参数
         $config['dataType'] = $config['dataType'] ?? 'json';
         //  定义代理头
@@ -1989,7 +1989,7 @@ class Bomber
         //  设置Curl总执行动作的最长秒数，如果设置为0，则无限
         curl_setopt($curl, CURLOPT_TIMEOUT, 1200);
         // 请求类型
-        switch (strtolower($config['method'])) {
+        switch ($config['method']) {
             // 获取外链文件
             case 'file':
                 // HTTPS特殊处理
@@ -2255,7 +2255,22 @@ class Bomber
                 break;
             //  防止xss
             case 'xss':
-                $data = (string)str_replace('_x000D_', '', (new AntiXSS())->removeEvilAttributes(['style'])->xss_clean($data));
+                $data = str_replace('_x000D_', '', (new AntiXSS())->removeEvilAttributes(['style'])->xss_clean((string)$data));
+                break;
+            //  防止xss但允许转换为HTML标签
+            case 'xssh':
+                //  转换事件
+                $events = [];
+                foreach (self::xss('onEvent') as $event)
+                    $events[] = "/{$event}/si";
+                $data = preg_replace_callback($events, function($match) { return preg_replace("/on/si", '<span>$0$1</span>', $match[0]); }, (string)$data);
+                //  转换脚本
+                $calls = [];
+                foreach (self::xss('call') as $call)
+                    $calls[] = "/{$call}\:/si";
+                $data = preg_replace_callback($calls, function($match) { return preg_replace("/\:/si", '<span>$0</span>', $match[0]); }, (string)$data);
+                //  调用XSS过滤
+                $data = self::typeCast($data, 'xss');
                 break;
             // 将HTML标签实体化
             case 'entity':
@@ -2277,13 +2292,60 @@ class Bomber
     /**
      * xss
      *
-     * @return AntiXSS
+     * @param null $type
+     *
+     * @return string[]|AntiXSS
      * @author    ComingDemon
      * @copyright 魔网天创信息科技
      */
-    public function xss()
+    public function xss($type = null)
     {
-        return new AntiXSS();
+        switch ($type) {
+            case 'onEvent':
+                return [
+                    'onAbort', 'onActivate', 'onAttribute', 'onAfterPrint', 'onAfterScriptExecute', 'onAfterUpdate', 'onAnimationCancel', 'onAnimationEnd', 'onAnimationIteration', 'onAnimationStart', 'onAriaRequest', 'onAutoComplete', 'onAutoCompleteError', 'onAuxClick',
+                    'onBeforeActivate', 'onBeforeCopy', 'onBeforeCut', 'onBeforeDeactivate', 'onBeforeEditFocus', 'onBeforePaste', 'onBeforePrint', 'onBeforeScriptExecute', 'onBeforeUnload', 'onBeforeUpdate', 'onBegin', 'onBlur', 'onBounce', 'onCancel',
+                    'onCanPlay', 'onCanPlayThrough', 'onCellChange', 'onChange', 'onClick', 'onClose', 'onCommand', 'onCompassNeedsCalibration', 'onContextMenu', 'onControlSelect', 'onCopy', 'onCueChange', 'onCut',
+                    'onDataAvailable', 'onDataSetChanged', 'onDataSetComplete', 'onDblClick', 'onDeactivate', 'onDeviceLight', 'onDeviceMotion', 'onDeviceOrientation', 'onDeviceProximity', 'onDrag', 'onDragDrop', 'onDragEnd', 'onDragEnter', 'onDragLeave', 'onDragOver', 'onDragStart', 'onDrop', 'onDurationChange',
+                    'onEmptied', 'onEnd', 'onEnded', 'onError', 'onErrorUpdate', 'onExit',
+                    'onFilterChange', 'onFinish', 'onFocus', 'onFocusIn', 'onFocusOut', 'onFormChange', 'onFormInput', 'onFullScreenChange', 'onFullScreenError', 'onGotPointerCapture',
+                    'onHashChange', 'onHelp',
+                    'onInput', 'onInvalid',
+                    'onKeyDown', 'onKeyPress', 'onKeyUp',
+                    'onLanguageChange', 'onLayoutComplete', 'onLoad', 'onLoadedData', 'onLoadedMetaData', 'onLoadStart', 'onLoseCapture', 'onLostPointerCapture',
+                    'onMediaComplete', 'onMediaError', 'onMessage', 'onMouseDown', 'onMouseEnter', 'onMouseLeave', 'onMouseMove', 'onMouseOut', 'onMouseOver', 'onMouseUp', 'onMouseWheel', 'onMove', 'onMoveEnd', 'onMoveStart', 'onMozFullScreenChange', 'onMozFullScreenError', 'onMozPointerLockChange', 'onMozPointerLockError', 'onMsContentZoom',
+                    'onMsFullScreenChange', 'onMsFullScreenError', 'onMsGestureChange', 'onMsGestureDoubleTap', 'onMsGestureEnd', 'onMsGestureHold', 'onMsGestureStart', 'onMsGestureTap', 'onMsGotPointerCapture', 'onMsInertiaStart', 'onMsLostPointerCapture', 'onMsManipulationStateChanged', 'onMsPointerCancel', 'onMsPointerDown', 'onMsPointerEnter',
+                    'onMsPointerLeave', 'onMsPointerMove', 'onMsPointerOut', 'onMsPointerOver', 'onMsPointerUp', 'onMsSiteModeJumpListItemRemoved', 'onMsThumbnailClick',
+                    'onOffline', 'onOnline', 'onOutOfSync', 'onPage', 'onPageHide', 'onPageShow', 'onPaste', 'onPause', 'onPlay', 'onPlaying', 'onPointerCancel', 'onPointerDown', 'onPointerEnter', 'onPointerLeave', 'onPointerLockChange', 'onPointerLockError', 'onPointerMove', 'onPointerOut', 'onPointerOver', 'onPointerUp', 'onPopState', 'onProgress',
+                    'onPropertyChange',
+                    'onqt_error',
+                    'onRateChange', 'onReadyStateChange', 'onReceived', 'onRepeat', 'onReset', 'onResize', 'onResizeEnd', 'onResizeStart', 'onResume', 'onReverse', 'onRowDelete', 'onRowEnter', 'onRowExit', 'onRowInserted', 'onRowsDelete', 'onRowsEnter', 'onRowsExit', 'onRowsInserted',
+                    'onScroll', 'onSearch', 'onSeek', 'onSeeked', 'onSeeking', 'onSelect', 'onSelectionChange', 'onSelectStart', 'onStalled', 'onStorage', 'onStorageCommit', 'onStart', 'onStop', 'onShow', 'onSyncRestored', 'onSubmit', 'onSuspend', 'onSynchRestored',
+                    'onTimeError', 'onTimeUpdate', 'onTimer', 'onTrackChange', 'onTransitionEnd', 'onToggle', 'onTouchCancel', 'onTouchEnd', 'onTouchLeave', 'onTouchMove', 'onTouchStart', 'onTransitionCancel', 'onTransitionEnd',
+                    'onUnload', 'onURLFlip', 'onUserProximity',
+                    'onVolumeChange',
+                    'onWaiting', 'onWebKitAnimationEnd', 'onWebKitAnimationIteration', 'onWebKitAnimationStart', 'onWebKitFullScreenChange', 'onWebKitFullScreenError', 'onWebKitTransitionEnd', 'onWheel',
+                ];
+                break;
+            case 'call':
+                return [
+                    'javascript',
+                    'jar',
+                    'applescript',
+                    'vbscript',
+                    'vbs',
+                    'wscript',
+                    'jscript',
+                    'behavior',
+                    'mocha',
+                    'livescript',
+                    'view-source',
+                ];
+                break;
+            default:
+                return new AntiXSS();
+                break;
+        }
     }
 
     /**
