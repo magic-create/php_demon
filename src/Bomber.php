@@ -1697,15 +1697,14 @@ class Bomber
     /**
      * 获取客户端IP地址
      *
-     * @param bool $adv  //是否进行高级模式获取（有可能被伪装）
-     * @param int  $type //返回类型 0 返回IP地址 1 返回IPV4地址数字
+     * @param bool $adv  //是否进行高级模式获取(有可能被伪装,通过配置nginx等外部方案解决)
+     * @param int  $type //返回类型(0:返回IP地址,1:返回IPV4地址数字)
      *
      * @return mixed
-     * @copyright 魔网天创信息科技
-     *
      * @author    ComingDemon
+     * @copyright 魔网天创信息科技
      */
-    public function ip($adv = false, $type = 0)
+    public function ip($adv = true, $type = 0)
     {
         $type = $type ? 1 : 0;
         static $ip = null;
@@ -1717,7 +1716,9 @@ class Bomber
                 $pos = array_search('unknown', $arr);
                 if ($pos !== false)
                     unset($arr[$pos]);
-                $ip = trim(current($arr));
+                if (!count($arr))
+                    $ip = $_SERVER['REMOTE_ADDR'];
+                else $ip = trim(current($arr));
             }
             else if (isset($_SERVER['HTTP_CLIENT_IP']))
                 $ip = $_SERVER['HTTP_CLIENT_IP'];
