@@ -853,7 +853,7 @@ class Bomber
      * @copyright 魔网天创信息科技
      *
      */
-    public function digest($string, $length, $charset = 'utf-8')
+    public function digest($string, $length = PHP_INT_MAX, $charset = 'utf-8')
     {
         return mb_substr(str_replace(["\r", "\n", "\r\n", PHP_EOL, '&nbsp;'], '', trim(strip_tags((string)nl2br($string)))), 0, $length, $charset ? : 'utf-8');
     }
