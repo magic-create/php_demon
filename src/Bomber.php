@@ -3441,7 +3441,6 @@ class Bomber
             fclose($fp);
         }
     }
-
     /**
      * 判断是否是函数
      *
@@ -3453,8 +3452,30 @@ class Bomber
      * @author    ComingDemon
      * @copyright 魔网天创信息科技
      */
-    function isFunction($var, $name = true)
+    public function isFunction($var, $name = true)
     {
         return ($name && is_string($var) && function_exists($var)) || (is_object($var) && ($var instanceof Closure));
+    }
+
+    /**
+     * 写文本日志
+     *
+     * @param string $path 文件路径
+     * @param string $file 文件名（如）
+     * @param string $message
+     * @param array  $data
+     * @param bool   $daily
+     *
+     * @return false|int
+     *
+     * @copyright 魔网天创信息科技
+     * @author    ComingDemon
+     */
+    public function writeLog(string $path, string $file = '', string $message = '', $data = [], $daily = true)
+    {
+        !is_dir($path) && mkdir($path, 0755, true);
+        $file = $daily ? (($file ? ($file . '.') : '') . date('Ymd') . '.log') : ($file ? : 'log') . '.log';
+
+        return file_put_contents($path . DIRECTORY_SEPARATOR . $file, '[' . date('Y-m-d H:i:s') . '] ' . $message . ' ' . json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . PHP_EOL, FILE_APPEND);
     }
 }
