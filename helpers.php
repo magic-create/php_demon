@@ -31,6 +31,11 @@ define('DEMON_METHOD', bomber()->requestMethod());
 define('DEMON_INAJAX', !strcasecmp($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '', 'xmlhttprequest'));
 
 /**
+ * 本次请求是否为JSON格式
+ */
+define('DEMON_INJSON', !strcasecmp($_SERVER['CONTENT_TYPE'] ?? '', 'application/json'));
+
+/**
  * 本次请求是否为SUBMIT提交
  */
 define('DEMON_SUBMIT', DEMON_METHOD == 'POST' && strtoupper(arguer('method') ?? '') != 'GET');

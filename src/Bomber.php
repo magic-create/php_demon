@@ -2256,9 +2256,9 @@ class Bomber
                 break;
             //  防止xss
             case 'xss':
-                $data = str_replace('_x000D_', '', (new AntiXSS())->removeEvilAttributes(['style'])->xss_clean((string)$data));
+                $data = str_replace('_x000D_', '', (new AntiXSS())->xss_clean((string)$data));
                 break;
-            //  防止xss但允许转换为HTML标签
+            //  防止xss但允许部分HTML标签和STYLE样式
             case 'xssh':
                 //  转换事件
                 $events = [];
@@ -2271,7 +2271,7 @@ class Bomber
                     $calls[] = "/{$call}\:/si";
                 $data = preg_replace_callback($calls, function($match) { return preg_replace("/\:/si", '<span>$0</span>', $match[0]); }, (string)$data);
                 //  调用XSS过滤
-                $data = self::typeCast($data, 'xss');
+                $data = str_replace('_x000D_', '', (new AntiXSS())->removeEvilHtmlTags(['iframe', 'audio', 'video', 'source'])->removeEvilAttributes(['style'])->xss_clean((string)$data));
                 break;
             // 将HTML标签实体化
             case 'entity':
