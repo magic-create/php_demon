@@ -338,23 +338,33 @@ class Bomber
     /**
      * 检查字符串是否包含数组中某个值
      *
-     * @param            $string
-     * @param            $arrry
-     * @param bool|false $returnvalue
+     * @param array|string $string
+     * @param array|string $arrry
+     * @param bool|false   $returnValue
      *
      * @return bool
      * @author    ComingDemon
      * @copyright 魔网天创信息科技
      *
      */
-    public function arrayStrpos($string, $arrry, $returnvalue = false)
+    public function arrayStrpos($string, $arrry, $returnValue = false)
     {
-        if (empty($string))
+        if (empty($string) || empty($arrry))
             return false;
 
-        foreach ((array)$arrry as $val) {
+        //  第一个参数传入数组则表示从第一个参数中循环查找第二个参数字符串是否存在任意第一参数成员中，如 arrayStrpos(['apples','bananas'], 'apple') = true
+        if (is_array($string))
+            foreach ($string as $val) {
+                if (mb_stripos($val, $arrry) !== false) {
+                    $return = $returnValue ? $val : true;
+
+                    return $return;
+                }
+            }
+        //  第一个参数传入字符串则表示从第二个参数数组中循环查找任意成员是否被包含在第一个字符串参数中，如 arrayStrpos('apples', ['apple','banana']) = true
+        else foreach ((array)$arrry as $val) {
             if (mb_stripos($string, $val) !== false) {
-                $return = $returnvalue ? $val : true;
+                $return = $returnValue ? $val : true;
 
                 return $return;
             }
