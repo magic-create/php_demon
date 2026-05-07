@@ -338,33 +338,23 @@ class Bomber
     /**
      * 检查字符串是否包含数组中某个值
      *
-     * @param array|string $string
-     * @param array|string $arrry
-     * @param bool|false   $returnValue
+     * @param            $string
+     * @param            $arrry
+     * @param bool|false $returnvalue
      *
      * @return bool
      * @author    ComingDemon
      * @copyright 魔网天创信息科技
      *
      */
-    public function arrayStrpos($string, $arrry, $returnValue = false)
+    public function arrayStrpos($string, $arrry, $returnvalue = false)
     {
-        if (empty($string) || empty($arrry))
+        if (empty($string))
             return false;
 
-        //  第一个参数传入数组则表示从第一个参数中循环查找第二个参数字符串是否存在任意第一参数成员中，如 arrayStrpos(['apples','bananas'], 'apple') = true
-        if (is_array($string))
-            foreach ($string as $val) {
-                if (mb_stripos($val, $arrry) !== false) {
-                    $return = $returnValue ? $val : true;
-
-                    return $return;
-                }
-            }
-        //  第一个参数传入字符串则表示从第二个参数数组中循环查找任意成员是否被包含在第一个字符串参数中，如 arrayStrpos('apples', ['apple','banana']) = true
-        else foreach ((array)$arrry as $val) {
+        foreach ((array)$arrry as $val) {
             if (mb_stripos($string, $val) !== false) {
-                $return = $returnValue ? $val : true;
+                $return = $returnvalue ? $val : true;
 
                 return $return;
             }
@@ -1015,6 +1005,8 @@ class Bomber
      */
     public function strReplacement($str, $replace = [], $placeholder = [':', ''])
     {
+        if($replace && is_object($replace))
+            $replace = object_to_array($replace);
         if (!$replace || !is_array($replace))
             return $str;
         if (!self::arrayOrderly($replace))
@@ -1853,7 +1845,7 @@ class Bomber
             //  邮箱
             'email' => '/^[\w-]+(\.[\w-]+)*@[\w-]+(\.[\w-]+)+$/',
             //  手机
-            'mobile' => '/^1([34578][0-9]|6[2567]|9[1589])[0-9]{8}$/',
+            'mobile' => '/^1(3[0-9]|4[0-9]|5[0-9]|6[0-9]|7[0-9]|8[0-9]|9[0-9])\d{8}$/',
             //  链接
             'url' => '/^http(s)?:\\/\\/.+/',
             //  QQ
@@ -1883,7 +1875,7 @@ class Bomber
             if (!is_string($content))
                 return $result(false);
             $content = json_decode($content);
-            if (!$content || !is_object($content) && !is_array($content))
+            if (!is_object($content) && !is_array($content))
                 return $result(false);
 
             return json_last_error() == JSON_ERROR_NONE;

@@ -236,7 +236,7 @@ class Color
             $this->hue = 60 * (($this->red - $this->green) / $diff) + 240;
         $this->hue /= 360;
         $this->lightness = ($max + $min) / 2 / 255;
-        $this->saturation = ((0 < $this->lightness && $this->lightness <= 0.5) ? $diff / (2 * $this->lightness) : ($this->lightness > 0.5) ? $diff / (2 - 2 * $this->lightness) : 0) / 255;
+        $this->saturation = ((0 < $this->lightness && $this->lightness <= 0.5) ? $diff / (2 * $this->lightness) : (($this->lightness > 0.5) ? $diff / (2 - 2 * $this->lightness) : 0)) / 255;
 
         return $this;
     }
