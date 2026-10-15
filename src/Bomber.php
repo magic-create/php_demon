@@ -809,19 +809,20 @@ class Bomber
      * @param int        $digit  //节点位数
      * @param string     $unit   //节点字符
      * @param bool|false $force  //是否强制(不判断符合位数)
+     * @param array $precision   //精度转换
      *
      * @return string
      * @copyright 魔网天创信息科技
      *
      * @author    ComingDemon
      */
-    public function numToChar($number, $digit = 4, $unit = 'k', $force = false)
+    public function numToChar($number, $digit = 4, $unit = 'k', $force = false, $precision = [2, 'floor'])
     {
         //  判断数字是否达到转换标准
-        $minNumber = pow(10, $digit);
-        if ($number > $minNumber * 10 || $force)
-            return (floor($number / $minNumber * 10) / 10) . $unit;
-        else return $number;
+        $minNumber = pow(10, $digit - 1);
+        if ($number >= $minNumber || $force)
+            return self::doublePrecision($number / $minNumber, $precision[0], $precision[1]) . $unit;
+        else return (string)$number;
     }
 
     /**
@@ -1213,6 +1214,7 @@ class Bomber
         //  微调位置
         $offsetX = $parm['offsetX'] ?? 0;
         $offsetY = $parm['offsetX'] ?? 0;
+        $centerFix = $parm['centerFix'] ?? 0.35;
         //  图片格式
         $type = strtolower($type);
         switch ($type) {
@@ -1221,7 +1223,7 @@ class Bomber
             case 'xml':
             case 'svg+xml':
                 $type = 'svg+xml';
-                $content = '<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="' . $width . '" height="' . $height . '"><rect fill="' . $background . '" x="0" y="0" width="' . $width . '" height="' . $height . '"></rect><text x="' . ($width / 2) . '" y="' . ($height / 2) . '" font-size="' . $size . '" text-copy="comingdemon" fill="' . $color . '" text-right="demon" text-anchor="middle" alignment-baseline="central">' . $str . '</text></svg>';
+                $content = '<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="' . $width . '" height="' . $height . '"><rect fill="' . $background . '" x="0" y="0" width="' . $width . '" height="' . $height . '"></rect><text x="' . ($width / 2 + $offsetX) . '" y="' . ($height / 2 + $offsetY) . '" dy="' . $centerFix . 'em" font-size="' . $size . '" text-copy="comingdemon" fill="' . $color . '" text-right="demon" text-anchor="middle">' . $str . '</text></svg>';
                 break;
             //  其他
             default:
@@ -1487,6 +1489,48 @@ class Bomber
             return $result;
         }
         else return substr($result, 0, 8) == substr($key, 8, 8) && substr($result, -8, 8) == substr($key, 16, 8) ? str_replace('<<\>>', '?', substr(substr($result, 8), 0, -8)) : '';
+    }
+
+    /**
+     * 字符串加密（AES-256-GCM加密，需要验证密钥和长度）
+     *
+     * @param        $string //目标字符串
+     * @param        $type   //类型（0：解密，1：加密）
+     * @param string $key    //密钥
+     * @param int    $num    //加密次数
+     *
+     * @return mixed|string
+     * @copyright 魔网天创信息科技
+     *
+     * @author    ComingDemon
+     */
+    public function gcm($string, $type = 1, $key = '', $num = 2)
+    {
+        if (!$string)
+            return '';
+        if (!$key)
+            $key = 'demon';
+        //  将问号提前转义，解密的时候注意还原
+        $string = str_replace('?', '<<\>>', $string);
+        $key = substr(hash('sha256', $key, true), 0, 32);
+        $ivLen = 8;
+        $tagLen = min(max($num, 1), 16);
+        if ($type == 0) {
+            $raw = base64_decode($string);
+            if (strlen($raw) <= $ivLen + $tagLen)
+                return '';
+            $iv = substr($raw, 0, $ivLen);
+            $tag = substr($raw, -$tagLen);
+            $body = substr($raw, $ivLen, strlen($raw) - $ivLen - $tagLen);
+            $result = openssl_decrypt($body, 'aes-256-gcm', $key, OPENSSL_RAW_DATA, $iv, $tag);
+
+            return $result === false ? '' : str_replace('<<\>>', '?', $result);
+        }
+        $iv = random_bytes($ivLen);
+        $tag = '';
+        $body = openssl_encrypt($string, 'aes-256-gcm', $key, OPENSSL_RAW_DATA, $iv, $tag, '', $tagLen);
+
+        return base64_encode($iv . $body . $tag);
     }
 
     /**
